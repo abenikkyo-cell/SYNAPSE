@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SYNAPSE</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #03020a;
+  --grid: rgba(120,180,255,0.04);
+  --red:    #ff3a5c;
+  --blue:   #3af0ff;
+  --purple: #c03aff;
+  --green:  #3aff8c;
+  --static: #556;
+  --chaos:  #ff9f0a;
+  --boost:  #fff9a0;
+  --ui-line: rgba(100,180,255,0.25);
+  --ui-glow: rgba(80,160,255,0.12);
+  --text-main: #e8f4ff;
+  --text-dim:  rgba(180,210,255,0.45);
+  --chain-color: #3af0ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'Share Tech Mono',monospace;color:var(--text-main);}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+canvas#fx{position:fixed;inset:0;z-index:5;pointer-events:none;}
+
+/* ===== TITLE ===== */
+#title{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(60,40,120,0.18) 0%,transparent 70%);}
+.t-logo{font-family:'Orbitron',sans-serif;font-size:clamp(48px,12vw,90px);font-weight:900;letter-spacing:0.18em;color:var(--text-main);text-shadow:0 0 40px rgba(100,160,255,0.6),0 0 80px rgba(80,120,255,0.25);animation:logoBreath 3s ease-in-out infinite;}
+@keyframes logoBreath{0%,100%{text-shadow:0 0 30px rgba(100,160,255,0.5),0 0 60px rgba(80,120,255,0.2);}50%{text-shadow:0 0 60px rgba(140,180,255,0.9),0 0 120px rgba(100,140,255,0.4);}}
+.t-sub{font-size:clamp(10px,2.5vw,14px);letter-spacing:0.35em;color:var(--text-dim);margin-top:6px;margin-bottom:36px;}
+.t-modes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:min(340px,88vw);margin-bottom:28px;}
+.mode-btn{background:rgba(30,40,80,0.4);border:1px solid var(--ui-line);border-radius:4px;padding:14px 10px;cursor:pointer;text-align:left;transition:all 0.2s;position:relative;overflow:hidden;}
+.mode-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(80,160,255,0.06),transparent);opacity:0;transition:opacity 0.2s;}
+.mode-btn:hover::before,.mode-btn.sel::before{opacity:1;}
+.mode-btn:hover,.mode-btn.sel{border-color:rgba(100,180,255,0.55);box-shadow:0 0 16px rgba(80,140,255,0.15);}
+.mode-name{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.15em;color:var(--text-main);}
+.mode-desc{font-size:10px;color:var(--text-dim);margin-top:4px;line-height:1.5;}
+.mode-tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:2px;margin-top:5px;background:rgba(80,140,255,0.15);color:#80b4ff;letter-spacing:0.1em;}
+#start-btn{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.25em;padding:14px 44px;border:1px solid rgba(100,180,255,0.5);background:transparent;color:var(--text-main);cursor:pointer;border-radius:3px;transition:all 0.25s;position:relative;overflow:hidden;}
+#start-btn::after{content:'';position:absolute;inset:0;background:rgba(80,140,255,0.1);transform:scaleX(0);transform-origin:left;transition:transform 0.25s;}
+#start-btn:hover::after{transform:scaleX(1);}
+#start-btn:hover{box-shadow:0 0 30px rgba(80,140,255,0.25);}
+.t-hi{font-size:11px;color:var(--text-dim);margin-top:14px;letter-spacing:0.1em;}
+
+/* ===== HUD ===== */
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:none;padding:10px 14px 0;pointer-events:none;}
+.hud-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.hud-block{display:flex;flex-direction:column;gap:2px;}
+.hud-label{font-size:9px;letter-spacing:0.25em;color:var(--text-dim);}
+.hud-val{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:var(--text-main);line-height:1;}
+.hud-val.big{font-size:28px;}
+#chain-display{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;color:var(--chain-color);text-align:center;min-width:80px;}
+#chain-name{font-size:10px;letter-spacing:0.2em;color:var(--text-dim);text-align:center;margin-top:1px;}
+#phase-label{font-size:9px;letter-spacing:0.2em;color:var(--text-dim);text-align:right;}
+#phase-val{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#a0d0ff;text-align:right;}
+/* CHAIN timer bar */
+#chain-bar-wrap{position:fixed;top:0;left:0;right:0;height:3px;z-index:25;background:rgba(255,255,255,0.05);}
+#chain-bar{height:100%;background:var(--chain-color);transition:width 0.1s linear,background 0.3s;box-shadow:0 0 8px var(--chain-color);}
+/* SYNCHRO bar */
+.synchro-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.synchro-label{font-size:9px;letter-spacing:0.2em;color:var(--text-dim);}
+#synchro-bar-wrap{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+#synchro-bar{height:100%;width:0%;background:var(--purple);border-radius:2px;transition:width 0.2s,box-shadow 0.2s;box-shadow:0 0 6px var(--purple);}
+#synchro-label-right{font-size:10px;color:var(--purple);font-family:'Orbitron',sans-serif;font-weight:700;min-width:36px;text-align:right;}
+/* Timer */
+#timer-wrap{position:fixed;bottom:0;left:0;right:0;height:2px;z-index:25;background:rgba(255,255,255,0.04);}
+#timer-bar{height:100%;background:rgba(100,180,255,0.6);transition:width 0.5s linear,background 0.5s;}
+
+/* ===== GRID ===== */
+#game{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;}
+#grid-wrap{position:relative;touch-action:none;}
+#grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;position:relative;}
+.cell{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.08s;}
+.cell:active{transform:scale(0.92);}
+.node{width:100%;height:100%;border-radius:3px;display:flex;align-items:center;justify-content:center;position:relative;transition:transform 0.12s,opacity 0.12s,box-shadow 0.2s;overflow:hidden;}
+.node::before{content:'';position:absolute;inset:0;border-radius:3px;opacity:0.15;}
+.node::after{content:'';position:absolute;inset:0;border-radius:3px;border:1px solid rgba(255,255,255,0.18);}
+/* node colors — softer glow, deeper inset light */
+.n-red{
+  background:rgba(255,58,92,0.13);
+  box-shadow:0 0 18px rgba(255,58,92,0.30),0 0 36px rgba(255,58,92,0.10),inset 0 0 18px rgba(255,80,110,0.12);
+  animation:nodeBreathRed 3.2s ease-in-out infinite;
+}
+.n-red::before{background:radial-gradient(circle at 30% 30%,rgba(255,140,160,0.55),transparent 65%);}
+.n-blue{
+  background:rgba(58,240,255,0.11);
+  box-shadow:0 0 18px rgba(58,240,255,0.28),0 0 36px rgba(58,240,255,0.09),inset 0 0 18px rgba(80,220,255,0.10);
+  animation:nodeBreathBlue 3.8s ease-in-out infinite;
+}
+.n-blue::before{background:radial-gradient(circle at 30% 30%,rgba(140,245,255,0.55),transparent 65%);}
+.n-purple{
+  background:rgba(192,58,255,0.13);
+  box-shadow:0 0 18px rgba(192,58,255,0.32),0 0 36px rgba(192,58,255,0.10),inset 0 0 18px rgba(210,80,255,0.12);
+  animation:nodeBreathPurple 2.9s ease-in-out infinite;
+}
+.n-purple::before{background:radial-gradient(circle at 30% 30%,rgba(230,140,255,0.55),transparent 65%);}
+.n-green{
+  background:rgba(58,255,140,0.11);
+  box-shadow:0 0 18px rgba(58,255,140,0.28),0 0 36px rgba(58,255,140,0.08),inset 0 0 18px rgba(80,255,160,0.10);
+  animation:nodeBreathGreen 4.1s ease-in-out infinite;
+}
+.n-green::before{background:radial-gradient(circle at 30% 30%,rgba(140,255,200,0.55),transparent 65%);}
+
+@keyframes nodeBreathRed   {0%,100%{box-shadow:0 0 14px rgba(255,58,92,0.25),0 0 28px rgba(255,58,92,0.07),inset 0 0 14px rgba(255,80,110,0.09);}50%{box-shadow:0 0 26px rgba(255,58,92,0.45),0 0 52px rgba(255,58,92,0.16),inset 0 0 24px rgba(255,80,110,0.18);}}
+@keyframes nodeBreathBlue  {0%,100%{box-shadow:0 0 14px rgba(58,240,255,0.22),0 0 28px rgba(58,240,255,0.06),inset 0 0 14px rgba(80,220,255,0.08);}50%{box-shadow:0 0 26px rgba(58,240,255,0.42),0 0 52px rgba(58,240,255,0.14),inset 0 0 24px rgba(80,220,255,0.16);}}
+@keyframes nodeBreathPurple{0%,100%{box-shadow:0 0 14px rgba(192,58,255,0.26),0 0 28px rgba(192,58,255,0.07),inset 0 0 14px rgba(210,80,255,0.10);}50%{box-shadow:0 0 28px rgba(192,58,255,0.50),0 0 56px rgba(192,58,255,0.18),inset 0 0 26px rgba(210,80,255,0.20);}}
+@keyframes nodeBreathGreen {0%,100%{box-shadow:0 0 14px rgba(58,255,140,0.22),0 0 28px rgba(58,255,140,0.06),inset 0 0 14px rgba(80,255,160,0.08);}50%{box-shadow:0 0 26px rgba(58,255,140,0.42),0 0 52px rgba(58,255,140,0.13),inset 0 0 24px rgba(80,255,160,0.15);}}
+
+.n-static{background:rgba(80,90,110,0.28);box-shadow:none;animation:staticFlicker 1.8s infinite;}
+.n-chaos{background:rgba(255,159,10,0.14);box-shadow:0 0 14px rgba(255,159,10,0.28);animation:chaosRotate 3s linear infinite;}
+.n-boost{background:rgba(255,249,160,0.13);box-shadow:0 0 20px rgba(255,249,160,0.45),0 0 40px rgba(255,249,160,0.15);animation:boostPulse 1.2s ease-in-out infinite;}
+@keyframes staticFlicker{0%,100%{opacity:1}45%{opacity:0.55}50%{opacity:1}55%{opacity:0.65}60%{opacity:1}}
+@keyframes chaosRotate{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+@keyframes boostPulse{0%,100%{box-shadow:0 0 18px rgba(255,249,160,0.40),0 0 36px rgba(255,249,160,0.12)}50%{box-shadow:0 0 36px rgba(255,249,160,0.80),0 0 70px rgba(255,249,160,0.28)}}
+
+.node-inner{font-size:clamp(9px,2.5vw,14px);font-weight:700;letter-spacing:0.05em;position:relative;z-index:1;text-shadow:0 0 8px currentColor;}
+.n-red .node-inner{color:rgba(255,170,180,0.95);}
+.n-blue .node-inner{color:rgba(160,245,255,0.95);}
+.n-purple .node-inner{color:rgba(230,170,255,0.95);}
+.n-green .node-inner{color:rgba(170,255,210,0.95);}
+.n-static .node-inner{color:rgba(160,170,200,0.65);}
+.n-chaos .node-inner{color:rgba(255,210,130,0.95);}
+.n-boost .node-inner{color:rgba(255,252,190,0.95);}
+
+/* selected state — brighter halo */
+.cell.sel .node{transform:scale(1.12);box-shadow:0 0 0 2px rgba(255,255,255,0.85),0 0 28px rgba(255,255,255,0.35),0 0 50px rgba(255,255,255,0.10);}
+/* fall animation */
+@keyframes fallIn{from{transform:translateY(-30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.fall-in{animation:fallIn 0.20s cubic-bezier(.22,1,.36,1) forwards;}
+/* destroy */
+@keyframes nodeDestroy{0%{transform:scale(1);opacity:1}35%{transform:scale(1.35);opacity:0.9}100%{transform:scale(0.1);opacity:0}}
+.destroying{animation:nodeDestroy 0.18s ease-out forwards;}
+
+/* synchro mode — all nodes bloom */
+body.synchro-mode .n-red   {animation:nodeBreathRed    1.2s ease-in-out infinite;box-shadow:0 0 30px rgba(255,58,92,0.65),0 0 60px rgba(255,58,92,0.20),inset 0 0 20px rgba(255,80,110,0.20);}
+body.synchro-mode .n-blue  {animation:nodeBreathBlue   1.4s ease-in-out infinite;box-shadow:0 0 30px rgba(58,240,255,0.60),0 0 60px rgba(58,240,255,0.18),inset 0 0 20px rgba(80,220,255,0.18);}
+body.synchro-mode .n-purple{animation:nodeBreathPurple 1.1s ease-in-out infinite;box-shadow:0 0 32px rgba(192,58,255,0.70),0 0 64px rgba(192,58,255,0.22),inset 0 0 22px rgba(210,80,255,0.22);}
+body.synchro-mode .n-green {animation:nodeBreathGreen  1.5s ease-in-out infinite;box-shadow:0 0 30px rgba(58,255,140,0.60),0 0 60px rgba(58,255,140,0.18),inset 0 0 20px rgba(80,255,160,0.18);}
+@keyframes synchroFlash{0%{background:rgba(192,58,255,0.03)}50%{background:rgba(192,58,255,0.09)}100%{background:rgba(192,58,255,0.03)}}
+body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
+
+/* vignette overlay (always on) */
+#vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse 85% 85% at 50% 50%,transparent 40%,rgba(3,2,10,0.55) 100%);}
+
+/* CHAIN POPUP */
+#chain-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;font-family:'Orbitron',sans-serif;font-size:clamp(24px,7vw,52px);font-weight:900;letter-spacing:0.15em;color:#fff;text-shadow:0 0 40px var(--chain-color),0 0 80px var(--chain-color);pointer-events:none;opacity:0;transition:opacity 0.15s;}
+
+/* ===== GAMEOVER ===== */
+#gameover{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(3,2,10,0.88);}
+.go-title{font-family:'Orbitron',sans-serif;font-size:clamp(28px,8vw,56px);font-weight:900;letter-spacing:0.2em;color:rgba(200,220,255,0.9);text-shadow:0 0 30px rgba(100,150,255,0.4);}
+.go-sub{font-size:12px;letter-spacing:0.4em;color:var(--text-dim);margin-bottom:8px;}
+.go-stats{display:flex;flex-direction:column;gap:4px;text-align:center;font-size:13px;color:var(--text-dim);margin-bottom:12px;}
+.go-stats span{color:var(--text-main);font-family:'Orbitron',sans-serif;}
+.go-btn{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.2em;padding:12px 36px;border:1px solid var(--ui-line);background:transparent;color:var(--text-main);cursor:pointer;border-radius:3px;transition:all 0.2s;}
+.go-btn:hover{border-color:rgba(100,180,255,0.5);box-shadow:0 0 20px rgba(80,140,255,0.2);}
+
+/* score flash */
+#score-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;font-family:'Orbitron',sans-serif;font-size:clamp(14px,4vw,22px);font-weight:700;pointer-events:none;opacity:0;color:#fff;transition:opacity 0.35s ease-out;letter-spacing:0.05em;}
+
+/* kb cursor blink */
+@keyframes kbCursorBlink{0%,100%{border-color:rgba(255,255,255,0.75);box-shadow:0 0 8px rgba(255,255,255,0.25);}50%{border-color:rgba(255,255,255,1);box-shadow:0 0 14px rgba(255,255,255,0.55);}}
+@keyframes groupHighlight{0%{box-shadow:0 0 0 2px rgba(255,255,255,0.0)}50%{box-shadow:0 0 0 3px rgba(255,255,255,0.6),0 0 16px rgba(255,255,255,0.2)}100%{box-shadow:0 0 0 2px rgba(255,255,255,0.0)}}
+.cell.connected-hi .node{animation:groupHighlight 0.5s ease-out forwards;}
+
+/* extend phase: pending (original match) */
+@keyframes extendPendingPulse{0%,100%{opacity:0.7;box-shadow:0 0 0 2px rgba(255,255,255,0.5)}50%{opacity:1;box-shadow:0 0 0 3px rgba(255,255,255,0.9),0 0 14px rgba(255,255,255,0.3)}}
+.cell.extend-pending .node{animation:extendPendingPulse 0.7s ease-in-out infinite;}
+
+/* extend phase: extra (player-added) */
+@keyframes extendExtraPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,220,0,0.6),0 0 8px rgba(255,220,0,0.2)}50%{box-shadow:0 0 0 3px rgba(255,220,0,1),0 0 18px rgba(255,220,0,0.4)}}
+.cell.extend-extra .node{animation:extendExtraPulse 0.5s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="vignette"></div>
+
+<!-- TITLE -->
+<div id="title">
+  <div class="t-logo">SYNAPSE</div>
+  <div class="t-sub">NEURAL CHAIN SYSTEM</div>
+  <div class="t-modes">
+    <div class="mode-btn sel" data-mode="standard" onclick="selectMode('standard',this)">
+      <div class="mode-name">STANDARD</div>
+      <div class="mode-desc">Balance of chain and score mastery.</div>
+      <div class="mode-tag">90 SEC</div>
+    </div>
+    <div class="mode-btn" data-mode="speed" onclick="selectMode('speed',this)">
+      <div class="mode-name">SPEED RUN</div>
+      <div class="mode-desc">Maximum intensity, minimum time.</div>
+      <div class="mode-tag">30 SEC</div>
+    </div>
+    <div class="mode-btn" data-mode="pure" onclick="selectMode('pure',this)">
+      <div class="mode-name">PURE</div>
+      <div class="mode-desc">No gimmicks. Only signal flow.</div>
+      <div class="mode-tag">90 SEC · CLEAN</div>
+    </div>
+    <div class="mode-btn" data-mode="endless" onclick="selectMode('endless',this)">
+      <div class="mode-name">ENDLESS</div>
+      <div class="mode-desc">No time limit. The chain is all.</div>
+      <div class="mode-tag">∞ NO LIMIT</div>
+    </div>
+  </div>
+  <button id="start-btn" onclick="initGame()">INITIALIZE</button>
+  <div class="t-hi" id="hi-display">BEST — ···</div>
+  <div style="font-size:10px;color:rgba(180,210,255,0.3);margin-top:10px;letter-spacing:0.15em;">
+    ↑↓←→ MOVE &nbsp;·&nbsp; SPACE SELECT/SWAP &nbsp;·&nbsp; MOUSE DRAG
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-top">
+    <div class="hud-block">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-val big" id="score-val">0</div>
+    </div>
+    <div class="hud-block" style="align-items:center;">
+      <div id="chain-display">1x CHAIN</div>
+      <div id="chain-name">NORMAL</div>
+    </div>
+    <div class="hud-block" style="align-items:flex-end;">
+      <div class="hud-label" style="text-align:right">PHASE / TIME</div>
+      <div id="phase-val">P1</div>
+      <div id="timer-text" style="font-family:'Orbitron',sans-serif;font-size:14px;color:#80b4ff;text-align:right;">90</div>
+    </div>
+  </div>
+  <div class="synchro-row">
+    <div class="synchro-label">SYNCHRO</div>
+    <div id="synchro-bar-wrap"><div id="synchro-bar"></div></div>
+    <div id="synchro-label-right">0%</div>
+  </div>
+</div>
+<div id="chain-bar-wrap"><div id="chain-bar" style="width:100%"></div></div>
+<div id="timer-wrap"><div id="timer-bar" style="width:100%"></div></div>
+
+<!-- GAME -->
+<div id="game">
+  <div id="grid-wrap">
+    <div id="grid"></div>
+  </div>
+</div>
+
+<div id="chain-popup"></div>
+<div id="score-flash"></div>
+
+<!-- GAMEOVER -->
+<div id="gameover">
+  <div class="go-title" id="go-title">SIGNAL LOST</div>
+  <div class="go-sub" id="go-sub">CONNECTION TERMINATED</div>
+  <div class="go-stats">
+    <div>SCORE <span id="go-score">0</span></div>
+    <div>MAX CHAIN <span id="go-chain">0</span>x</div>
+    <div>BEST <span id="go-best">0</span></div>
+  </div>
+  <button class="go-btn" onclick="returnTitle()">RECONNECT</button>
+</div>
+
+<script>
+// ===== CANVAS SETUP (declared first to avoid TDZ errors) =====
+var bgC = document.getElementById('bg');
+var bgX = bgC.getContext('2d');
+var fxC = document.getElementById('fx');
+var fxX = fxC.getContext('2d');
+var bgT = 0;
+
+function resizeBg() {
+  bgC.width = window.innerWidth; bgC.height = window.innerHeight;
+  fxC.width = window.innerWidth; fxC.height = window.innerHeight;
+}
+resizeBg();
+window.addEventListener('resize', ()=>{ resizeBg(); sizeGrid(); });
+
+// ===== GAME STATE (declared early so drawBg can reference) =====
+var gamePhase = 1;
+var synchroActive = false;
+var mode = 'standard';
+
+// ===== AUDIO ENGINE =====
+let actx = null;
+let masterGain, reverbGain;
+
+function initAudio() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = actx.createGain(); masterGain.gain.value = 0.55;
+  reverbGain = actx.createGain(); reverbGain.gain.value = 0.18;
+  const conv = actx.createConvolver();
+  const len = actx.sampleRate * 1.8;
+  const imp = actx.createBuffer(2, len, actx.sampleRate);
+  for (let c=0;c<2;c++){const d=imp.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);}
+  conv.buffer = imp;
+  masterGain.connect(actx.destination);
+  reverbGain.connect(conv); conv.connect(actx.destination);
+}
+
+function playTone(freq, type='sine', dur=0.12, vol=0.25, detune=0) {
+  if (!actx) return;
+  const osc = actx.createOscillator();
+  const g = actx.createGain();
+  osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
+  g.gain.setValueAtTime(0, actx.currentTime);
+  g.gain.linearRampToValueAtTime(vol, actx.currentTime + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+  osc.connect(g); g.connect(masterGain); g.connect(reverbGain);
+  osc.start(); osc.stop(actx.currentTime + dur + 0.05);
+}
+
+const SCALE = [261.6,293.7,329.6,349.2,392,440,493.9,523.3,587.3,659.3,698.5,784];
+function playChainNote(chain) {
+  const idx = Math.min(chain - 1, SCALE.length - 1);
+  const f = SCALE[idx];
+  playTone(f * 1, 'sine', 0.18, 0.22);
+  if (chain >= 3) playTone(f * 1.5, 'triangle', 0.14, 0.10);
+  if (chain >= 6) playTone(f * 2, 'sine', 0.10, 0.07);
+  if (chain >= 10) { playTone(f * 0.5, 'sawtooth', 0.22, 0.08); }
+}
+
+function playDestroy(color, count) {
+  const freqs = {red:220,blue:440,purple:330,green:370,static:150,chaos:550,boost:660};
+  const f = freqs[color] || 330;
+  playTone(f, 'triangle', 0.1+count*0.02, 0.15+Math.min(count*0.02,0.15));
+  if (count >= 4) playTone(f*1.25,'sine',0.12,0.08);
+}
+
+function playSynchro() {
+  [220,330,440,550,660].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.4,0.18,i*5),i*60));
+}
+
+function playBreak() {
+  playTone(180,'sawtooth',0.4,0.22,-50);
+  playTone(90,'sine',0.5,0.18);
+}
+
+// ===== BACKGROUND DRAW =====
+// Pre-generate star field
+const STARS = Array.from({length:90}, ()=>({
+  x: Math.random(), y: Math.random(),
+  r: 0.3 + Math.random() * 1.1,
+  phase: Math.random() * Math.PI * 2,
+  speed: 0.4 + Math.random() * 0.8
+}));
+
+function drawBg() {
+  const W = bgC.width, H = bgC.height;
+  bgX.clearRect(0, 0, W, H);
+
+  // Deep base
+  bgX.fillStyle = '#03020a';
+  bgX.fillRect(0, 0, W, H);
+
+  // ── Nebula orbs (always present, very subtle) ──
+  const orbs = [
+    { nx:0.18, ny:0.25, rx:0.38, ry:0.32, col:'60,30,130', ph:0.7 },
+    { nx:0.82, ny:0.72, rx:0.32, ry:0.28, col:'20,60,120', ph:1.4 },
+    { nx:0.50, ny:0.50, rx:0.28, ry:0.24, col:'80,20,110', ph:0.3 },
+    { nx:0.15, ny:0.80, rx:0.22, ry:0.20, col:'10,60,80',  ph:2.1 },
+    { nx:0.88, ny:0.15, rx:0.24, ry:0.20, col:'60,15,90',  ph:1.8 },
+  ];
+  for (const o of orbs) {
+    const pulse = Math.sin(bgT * 0.45 + o.ph) * 0.5 + 0.5;
+    const alpha = 0.055 + pulse * 0.035;
+    const grad = bgX.createRadialGradient(
+      o.nx*W, o.ny*H, 0,
+      o.nx*W, o.ny*H, Math.max(W,H) * (o.rx + pulse*0.03)
+    );
+    grad.addColorStop(0,   `rgba(${o.col},${alpha})`);
+    grad.addColorStop(0.5, `rgba(${o.col},${alpha*0.4})`);
+    grad.addColorStop(1,   'transparent');
+    bgX.fillStyle = grad;
+    bgX.fillRect(0, 0, W, H);
+  }
+
+  // ── Star field ──
+  for (const s of STARS) {
+    const twinkle = Math.sin(bgT * s.speed + s.phase) * 0.5 + 0.5;
+    const alpha = 0.12 + twinkle * 0.30;
+    bgX.beginPath();
+    bgX.arc(s.x * W, s.y * H, s.r * (0.8 + twinkle*0.4), 0, Math.PI*2);
+    bgX.fillStyle = `rgba(180,210,255,${alpha})`;
+    bgX.fill();
+  }
+
+  // ── Breathing grid ──
+  const gridAlpha = 0.022 + Math.sin(bgT * 0.55) * 0.008;
+  bgX.strokeStyle = `rgba(90,150,255,${gridAlpha})`;
+  bgX.lineWidth = 0.5;
+  const gs = 52;
+  for (let x = 0; x < W; x += gs) { bgX.beginPath(); bgX.moveTo(x,0); bgX.lineTo(x,H); bgX.stroke(); }
+  for (let y = 0; y < H; y += gs) { bgX.beginPath(); bgX.moveTo(0,y); bgX.lineTo(W,y); bgX.stroke(); }
+
+  // ── Phase overlay ──
+  if (gamePhase >= 3) {
+    const alpha = (gamePhase - 2) * 0.014;
+    bgX.fillStyle = `rgba(${gamePhase>=4?'70,0,110':'30,0,70'},${alpha + Math.sin(bgT*1.1)*alpha*0.5})`;
+    bgX.fillRect(0, 0, W, H);
+  }
+
+  // ── SYNCHRO aura ──
+  if (synchroActive) {
+    const p = Math.sin(bgT * 2.8) * 0.5 + 0.5;
+
+    // Pulsing purple veil
+    bgX.fillStyle = `rgba(110,0,180,${0.05 + p * 0.07})`;
+    bgX.fillRect(0, 0, W, H);
+
+    // Deep radial bloom from center
+    const bloom = bgX.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.65);
+    bloom.addColorStop(0,   `rgba(200,80,255,${0.10 + p*0.10})`);
+    bloom.addColorStop(0.5, `rgba(140,40,200,${0.05 + p*0.05})`);
+    bloom.addColorStop(1,   'transparent');
+    bgX.fillStyle = bloom;
+    bgX.fillRect(0, 0, W, H);
+
+    // Edge pulse rings
+    for (let i=0; i<3; i++) {
+      const phase2 = (bgT * 1.8 + i * 1.1) % (Math.PI*2);
+      const rp = (Math.sin(phase2)*0.5+0.5);
+      bgX.beginPath();
+      bgX.arc(W/2, H/2, 60 + rp * Math.min(W,H)*0.38, 0, Math.PI*2);
+      bgX.strokeStyle = `rgba(180,80,255,${0.06 + rp*0.06})`;
+      bgX.lineWidth = 1 + rp*1.5;
+      bgX.stroke();
+    }
+  }
+}
+
+// ===== FX CANVAS =====
+const particles = [];
+
+function spawnParticles(x, y, color, count) {
+  const cols = {red:'255,58,92',blue:'58,240,255',purple:'192,58,255',green:'58,255,140',boost:'255,249,160',chaos:'255,159,10',static:'160,170,210'};
+  const c = cols[color] || '200,220,255';
+  for (let i = 0; i < count; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const spd = 0.6 + Math.random() * 4.2;
+    const big = Math.random() < 0.2; // 20% chance of larger glow particle
+    particles.push({
+      x, y,
+      vx: Math.cos(ang) * spd,
+      vy: Math.sin(ang) * spd - (big ? 2.5 : 1.5),
+      life: big ? 0.85 : 1,
+      col: c,
+      size: big ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2.5,
+      decay: big ? 0.022 + Math.random()*0.018 : 0.028 + Math.random()*0.025
+    });
+  }
+}
+
+function spawnRipple(x, y, color, big=false) {
+  const cols = {red:'255,58,92',blue:'58,240,255',purple:'192,58,255',green:'58,255,140',boost:'255,249,160',chaos:'255,159,10',static:'160,170,210'};
+  const c = cols[color] || '200,220,255';
+  // Primary ripple
+  ripples.push({x, y, r: 5,  col: c, life: 1.0, speed: big?4.5:3.2, decay: big?0.030:0.038});
+  // Secondary (delayed, slower fade)
+  setTimeout(()=>{
+    ripples.push({x, y, r: 3, col: c, life: 0.75, speed: big?3.2:2.2, decay: big?0.022:0.030});
+  }, 80);
+  // Tertiary for big bursts
+  if (big) {
+    setTimeout(()=>{
+      ripples.push({x, y, r: 8, col: c, life: 0.55, speed: 5.5, decay: 0.025});
+    }, 160);
+  }
+}
+var ripples = [];
+
+// ===== EXTEND PHASE STATE =====
+// When a match is found, we enter a 1-second EXTEND window before destroying.
+var extendActive = false;         // are we in the extend window?
+var extendGroups = [];            // original matched groups (array of {type,cells})
+var extendExtra  = new Set();     // additional cells the player tapped (keys: r*COLS+c)
+var extendTimer  = 0;             // countdown in seconds (1.0 → 0)
+var extendRings  = [];            // canvas ring animations [{cx,cy,progress,col}]
+const EXTEND_DURATION = 2.0;     // seconds
+
+function startExtendPhase(groups) {
+  extendActive = true;
+  extendGroups = groups;
+  extendExtra  = new Set();
+  extendTimer  = EXTEND_DURATION;
+  busy = false; // allow taps
+
+  // Calculate centroid of all matched cells for ring origin
+  extendRings = [];
+  const colMap = {red:'255,58,92',blue:'58,240,255',purple:'192,58,255',green:'58,255,140'};
+
+  // One ring per group, starting from group centroid
+  for (const g of groups) {
+    const rAvg = g.cells.reduce((s,[r])=>s+r,0)/g.cells.length;
+    const cAvg = g.cells.reduce((s,[,c])=>s+c,0)/g.cells.length;
+    const refCell = cellEls[Math.round(rAvg)]?.[Math.round(cAvg)];
+    if (!refCell) continue;
+    const rect = refCell.getBoundingClientRect();
+    extendRings.push({
+      cx: rect.left + rect.width/2,
+      cy: rect.top  + rect.height/2,
+      progress: 0,   // 0→1 over EXTEND_DURATION
+      col: colMap[g.type] || '200,220,255'
+    });
+  }
+
+  // Highlight all pending cells
+  refreshExtendHighlights();
+  playTone(440,'sine',0.08,0.1);
+}
+
+function refreshExtendHighlights() {
+  // Remove old highlights
+  document.querySelectorAll('.cell.extend-pending').forEach(c=>c.classList.remove('extend-pending'));
+  document.querySelectorAll('.cell.extend-extra').forEach(c=>c.classList.remove('extend-extra'));
+
+  for (const g of extendGroups) {
+    for (const [r,c] of g.cells) {
+      cellEls[r]?.[c]?.classList.add('extend-pending');
+    }
+  }
+  extendExtra.forEach(key=>{
+    const r=Math.floor(key/COLS), c=key%COLS;
+    cellEls[r]?.[c]?.classList.add('extend-extra');
+  });
+}
+
+function tickExtend(dt) {
+  if (!extendActive) return;
+  extendTimer -= dt;
+
+  // Advance ring animations
+  const progress = 1 - Math.max(0, extendTimer) / EXTEND_DURATION;
+  for (const ring of extendRings) ring.progress = progress;
+
+  if (extendTimer <= 0) commitExtend();
+}
+
+function commitExtend() {
+  if (!extendActive) return;
+  extendActive = false;
+  extendRings = [];
+
+  // Clear UI highlights
+  document.querySelectorAll('.cell.extend-pending,.cell.extend-extra')
+    .forEach(c=>{ c.classList.remove('extend-pending','extend-extra'); });
+
+  // Merge extra cells into groups
+  // Build a flat set of all "original" cells
+  const originalKeys = new Set();
+  for (const g of extendGroups) {
+    for (const [r,c] of g.cells) originalKeys.add(r*COLS+c);
+  }
+
+  // Extra cells: group them by their type (from grid) and merge into existing groups
+  // or create new single-type buckets
+  const extraByType = {};
+  extendExtra.forEach(key=>{
+    if (originalKeys.has(key)) return; // already in
+    const r=Math.floor(key/COLS), c=key%COLS;
+    const node = grid[r][c];
+    if (!node) return;
+    if (!extraByType[node.type]) extraByType[node.type] = [];
+    extraByType[node.type].push([r,c]);
+  });
+
+  // Merge extra cells into matching groups
+  const mergedGroups = extendGroups.map(g=>({...g, cells:[...g.cells]}));
+  for (const [type, cells] of Object.entries(extraByType)) {
+    const existing = mergedGroups.find(g=>g.type===type);
+    if (existing) {
+      existing.cells.push(...cells);
+    } else {
+      // Only include if total >=3 (new standalone group from extras alone)
+      if (cells.length >= 1) mergedGroups.push({type, cells});
+    }
+  }
+
+  // Build flat allCells list
+  const allCells = [];
+  const seen = new Set();
+  for (const g of mergedGroups) {
+    for (const [r,c] of g.cells) {
+      const key = r*COLS+c;
+      if (!seen.has(key)) { seen.add(key); allCells.push([r,c]); }
+    }
+  }
+
+  busy = true;
+  // Destroy animation
+  allCells.forEach(([r,c])=>{
+    const cell = cellEls[r][c];
+    if (cell?.firstChild) cell.firstChild.classList.add('destroying');
+  });
+  setTimeout(()=>destroyMatches(mergedGroups, allCells), 160);
+}
+
+function drawExtendRings() {
+  if (!extendActive || extendRings.length === 0) return;
+
+  for (const ring of extendRings) {
+    const p = ring.progress; // 0→1
+    // Radius shrinks from maxR down to 0
+    const maxR = 80;
+    const minR = 0;
+    const r = maxR * (1 - p) + minR * p;
+    if (r <= 0) continue;
+
+    // Line width grows slightly then collapses with radius
+    const lw = 2.5 * (1 - p * 0.7);
+    // Alpha peaks mid-animation then fades at end
+    const alpha = p < 0.85 ? 0.85 : 0.85 * (1 - (p-0.85)/0.15);
+
+    fxX.beginPath();
+    fxX.arc(ring.cx, ring.cy, r, 0, Math.PI*2);
+    fxX.strokeStyle = `rgba(${ring.col},${alpha})`;
+    fxX.lineWidth = lw;
+    fxX.shadowColor = `rgba(${ring.col},0.6)`;
+    fxX.shadowBlur = 8;
+    fxX.stroke();
+    fxX.shadowBlur = 0;
+
+    // Dashed inner ring (rotates over time)
+    const angle = bgT * 2;
+    fxX.save();
+    fxX.translate(ring.cx, ring.cy);
+    fxX.rotate(angle);
+    fxX.beginPath();
+    fxX.arc(0, 0, r * 0.7, 0, Math.PI*2);
+    fxX.setLineDash([6, 8]);
+    fxX.strokeStyle = `rgba(${ring.col},${alpha * 0.4})`;
+    fxX.lineWidth = 1;
+    fxX.stroke();
+    fxX.setLineDash([]);
+    fxX.restore();
+
+    // "ADD" label near the ring
+    if (p < 0.75) {
+      const label = Math.ceil((1-p) * EXTEND_DURATION * 10) / 10;
+      fxX.font = `bold 11px 'Orbitron',monospace`;
+      fxX.fillStyle = `rgba(${ring.col},${alpha * 0.9})`;
+      fxX.textAlign = 'center';
+      fxX.fillText(`+TAP  ${label.toFixed(1)}s`, ring.cx, ring.cy - r - 8);
+    }
+  }
+  fxX.textAlign = 'left';
+}
+
+function drawFx() {
+  fxX.clearRect(0, 0, fxC.width, fxC.height);
+
+  // ── Extend phase rings ──
+  drawExtendRings();
+
+  // ── Particles ──
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    const alpha = p.life * 0.88;
+    const r = p.size * p.life;
+
+    // Glow halo
+    fxX.beginPath();
+    fxX.arc(p.x, p.y, r * 2.2, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${p.col},${alpha * 0.18})`;
+    fxX.fill();
+
+    // Core dot
+    fxX.beginPath();
+    fxX.arc(p.x, p.y, r, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${p.col},${alpha})`;
+    fxX.fill();
+
+    p.x += p.vx; p.y += p.vy; p.vy += 0.10;
+    p.life -= p.decay; p.size *= 0.975;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // ── Ripples ──
+  for (let i = ripples.length-1; i >= 0; i--) {
+    const rp = ripples[i];
+    const a  = rp.life;
+
+    // Soft fill inside ripple (very faint)
+    fxX.beginPath();
+    fxX.arc(rp.x, rp.y, rp.r, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${rp.col},${a * 0.04})`;
+    fxX.fill();
+
+    // Outer glow ring
+    fxX.beginPath();
+    fxX.arc(rp.x, rp.y, rp.r + 3, 0, Math.PI*2);
+    fxX.strokeStyle = `rgba(${rp.col},${a * 0.18})`;
+    fxX.lineWidth   = (rp.speed ?? 3) * 1.4 * rp.life;
+    fxX.stroke();
+
+    // Main ring
+    fxX.beginPath();
+    fxX.arc(rp.x, rp.y, rp.r, 0, Math.PI*2);
+    fxX.strokeStyle = `rgba(${rp.col},${a * 0.75})`;
+    fxX.lineWidth   = 1.6 * rp.life;
+    fxX.shadowColor = `rgba(${rp.col},0.5)`;
+    fxX.shadowBlur  = 10;
+    fxX.stroke();
+    fxX.shadowBlur  = 0;
+
+    rp.r    += rp.speed ?? 3;
+    rp.life -= rp.decay ?? 0.04;
+    if (rp.life <= 0) ripples.splice(i, 1);
+  }
+
+  // ── Screen flash ──
+  if (screenFlash > 0) {
+    fxX.fillStyle = `rgba(255,255,255,${screenFlash * 0.10})`;
+    fxX.fillRect(0, 0, fxC.width, fxC.height);
+    screenFlash = Math.max(0, screenFlash - 0.055);
+  }
+
+  // ── Synchro chromatic shift ──
+  if (synchroActive) {
+    const shift = 3 + Math.sin(bgT * 5) * 1.5;
+    fxX.globalAlpha = 0.06 + Math.sin(bgT*4) * 0.025;
+    fxX.drawImage(fxC, -shift, 0);
+    fxX.globalCompositeOperation = 'screen';
+    fxX.globalAlpha = 0.04;
+    fxX.drawImage(fxC,  shift, 0);
+    fxX.globalCompositeOperation = 'source-over';
+    fxX.globalAlpha = 1;
+  }
+}
+
+var screenFlash = 0;
+
+// ===== GAME STATE =====
+const COLS=6, ROWS=6;
+const COLORS=['red','blue','purple','green'];
+const CHAIN_NAMES={1:'NORMAL',3:'BOOST',6:'RESONANCE',10:'SYNCHRONIZE',15:'TRANSCEND',20:'ASCEND'};
+
+let phaseTimer=0;
+let grid=[], cellEls=[];
+let selected=null, busy=false;
+let score=0, chainCount=1, chainTimer=0, chainMax=0;
+let chainTimerMax=4.5;
+let synchroGauge=0, synchroTimer=0;
+let totalTime=90, timeLeft=90;
+var gameRunning=false;
+let lastTime=0, animId=0;
+let staticHits={};
+
+const PHASE_TIMES=[0,20,40,60,80];
+
+function selectMode(m, el) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ===== GRID SETUP =====
+function sizeGrid() {
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const avail = Math.min(vw*0.96, vh*0.70, 380);
+  const sz = Math.floor((avail - 5*3) / 6);
+  document.querySelectorAll('.cell').forEach(c=>{ c.style.width=sz+'px'; c.style.height=sz+'px'; });
+  document.getElementById('grid').style.gap = '3px';
+}
+
+function makeNode(type) { return {type, hp: type==='static'?2:1}; }
+
+function randomType(phase, pureMode) {
+  if (pureMode) return COLORS[Math.floor(Math.random()*4)];
+  const r = Math.random();
+  if (phase>=3 && r<0.05) return 'chaos';
+  if (phase>=2 && r<0.08) return 'static';
+  if (r<0.04) return 'boost';
+  return COLORS[Math.floor(Math.random()*4)];
+}
+
+function buildGrid(phase, pureMode) {
+  grid = [];
+  for (let r=0;r<ROWS;r++){
+    grid[r]=[];
+    for (let c=0;c<COLS;c++){
+      grid[r][c]=makeNode(randomType(phase, pureMode));
+    }
+  }
+  // ensure no immediate 3-match on start
+  for (let attempt=0;attempt<20;attempt++){
+    const m=findMatches();
+    if(m.length===0)break;
+    m.forEach(([r,c])=>grid[r][c]=makeNode(randomType(phase,pureMode)));
+  }
+}
+
+function renderGrid() {
+  const g = document.getElementById('grid');
+  g.innerHTML=''; cellEls=[];
+  for (let r=0;r<ROWS;r++){
+    cellEls[r]=[];
+    for (let c=0;c<COLS;c++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.dataset.r=r; cell.dataset.c=c;
+      const node=createNodeEl(grid[r][c].type);
+      cell.appendChild(node);
+      cell.addEventListener('pointerdown', onPointerDown);
+      g.appendChild(cell);
+      cellEls[r][c]=cell;
+    }
+  }
+  sizeGrid();
+}
+
+function createNodeEl(type) {
+  const n=document.createElement('div');
+  n.className=`node n-${type}`;
+  const inner=document.createElement('div');
+  inner.className='node-inner';
+  const labels={red:'SYN',blue:'AMP',purple:'RES',green:'GEN',static:'////',chaos:'???',boost:'!!!'};
+  inner.textContent=labels[type]||type.toUpperCase().slice(0,3);
+  n.appendChild(inner);
+  return n;
+}
+
+function refreshCell(r, c, animate) {
+  const cell=cellEls[r][c];
+  if(!cell) return;
+  const t=grid[r][c]?.type;
+  if(!t){cell.innerHTML='';return;}
+  const node=createNodeEl(t);
+  if(animate){node.classList.add('fall-in');}
+  cell.innerHTML=''; cell.appendChild(node);
+}
+
+// ===== INPUT =====
+let dragStart=null, touchMoved=false;
+
+function onPointerDown(e) {
+  e.preventDefault();
+  if (!gameRunning) return;
+  const cell = e.currentTarget;
+  const r = +cell.dataset.r, c = +cell.dataset.c;
+  initAudio();
+
+  // ── EXTEND PHASE: tap to add extra cells ──
+  if (extendActive) {
+    const node = grid[r][c];
+    if (!node) return;
+    const MATCHABLE = ['red','blue','purple','green'];
+    if (!MATCHABLE.includes(node.type)) return;
+
+    // Only allow tapping cells whose type matches at least one pending group
+    const pendingTypes = new Set(extendGroups.map(g=>g.type));
+    if (!pendingTypes.has(node.type)) return;
+
+    const key = r * COLS + c;
+    // Check not already in original groups
+    let alreadyPending = false;
+    for (const g of extendGroups) {
+      if (g.cells.some(([gr,gc])=>gr===r&&gc===c)) { alreadyPending=true; break; }
+    }
+    if (alreadyPending) return;
+
+    if (extendExtra.has(key)) {
+      extendExtra.delete(key); // toggle off
+    } else {
+      extendExtra.add(key);
+      playTone(550,'sine',0.08,0.14);
+      spawnSelectRipple(r, c);   // ← 波紋
+      // pop effect
+      const el = cell.firstChild;
+      if (el) { el.style.transition='transform 0.1s'; el.style.transform='scale(1.25)'; setTimeout(()=>{ if(el)el.style.transform=''; },120); }
+    }
+    refreshExtendHighlights();
+    return;
+  }
+
+  // ── NORMAL play ──
+  if (busy) return;
+  if (selected === null) {
+    selected = {r, c};
+    cell.classList.add('sel');
+    highlightConnected(r, c);
+    spawnSelectRipple(r, c);           // ← 波紋
+    kbCursor = {r, c}; drawKbCursor(); // ← キーボードカーソルも同期
+    dragStart = {r, c, x: e.clientX, y: e.clientY};
+    cell.setPointerCapture(e.pointerId);
+    cell.addEventListener('pointermove', onPointerMove);
+    cell.addEventListener('pointerup', onPointerUp);
+  } else {
+    cell.removeEventListener('pointermove', onPointerMove);
+    cell.removeEventListener('pointerup', onPointerUp);
+    trySwap(selected.r, selected.c, r, c);
+    clearSelected();
+  }
+}
+
+function onPointerMove(e) {
+  if (!dragStart) return;
+  const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y;
+  if (Math.abs(dx)<18 && Math.abs(dy)<18) return;
+  let dr=0, dc=0;
+  if (Math.abs(dx)>Math.abs(dy)) dc=dx>0?1:-1; else dr=dy>0?1:-1;
+  const nr=dragStart.r+dr, nc=dragStart.c+dc;
+  if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) {
+    e.currentTarget.removeEventListener('pointermove',onPointerMove);
+    e.currentTarget.removeEventListener('pointerup',onPointerUp);
+    trySwap(dragStart.r,dragStart.c,nr,nc);
+    clearSelected();
+  }
+}
+
+function onPointerUp(e) {
+  e.currentTarget.removeEventListener('pointermove',onPointerMove);
+  e.currentTarget.removeEventListener('pointerup',onPointerUp);
+  dragStart=null;
+}
+
+// ===== KEYBOARD CURSOR =====
+let kbCursor = {r:2, c:2};   // current cursor position
+let kbMoveFrom = null;        // first selected cell for swap (row/col)
+
+function getCellCenter(r, c) {
+  const rect = cellEls[r]?.[c]?.getBoundingClientRect();
+  if (!rect) return null;
+  return { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+}
+
+function spawnSelectRipple(r, c) {
+  const pos = getCellCenter(r, c);
+  if (!pos) return;
+  const node = grid[r][c];
+  const colMap = {red:'255,58,92',blue:'58,240,255',purple:'192,58,255',green:'58,255,140',
+                  static:'160,170,200',chaos:'255,159,10',boost:'255,249,160'};
+  const col = colMap[node?.type] || '200,220,255';
+  // Two gentle ripples — selection feels delicate not explosive
+  ripples.push({x:pos.x, y:pos.y, r:4,  col, life:0.90, speed:2.8, decay:0.038});
+  setTimeout(()=>{
+    ripples.push({x:pos.x, y:pos.y, r:2, col, life:0.65, speed:2.0, decay:0.030});
+  }, 70);
+  // Tiny particle puff
+  spawnParticles(pos.x, pos.y, node?.type || 'blue', 5);
+}
+
+function moveCursor(dr, dc) {
+  const nr = kbCursor.r + dr;
+  const nc = kbCursor.c + dc;
+  if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return;
+
+  // If we have a "move-from" selected, arrow key = swap direction
+  if (kbMoveFrom !== null) {
+    trySwap(kbMoveFrom.r, kbMoveFrom.c, nr, nc);
+    // clear keyboard move selection
+    const fromCell = cellEls[kbMoveFrom.r]?.[kbMoveFrom.c];
+    if (fromCell) fromCell.classList.remove('sel');
+    document.querySelectorAll('.cell.connected-hi').forEach(c=>c.classList.remove('connected-hi'));
+    kbMoveFrom = null;
+    kbCursor = {r: nr, c: nc};
+    drawKbCursor();
+    return;
+  }
+
+  kbCursor = {r: nr, c: nc};
+  drawKbCursor();
+  spawnSelectRipple(nr, nc);
+  playTone(280, 'sine', 0.06, 0.08);
+}
+
+function kbConfirm() {
+  // EXTEND PHASE: space = add/toggle extra cell
+  if (extendActive) {
+    const {r, c} = kbCursor;
+    const node = grid[r][c];
+    if (!node) return;
+    const pendingTypes = new Set(extendGroups.map(g=>g.type));
+    if (!pendingTypes.has(node.type)) return;
+    let alreadyPending = false;
+    for (const g of extendGroups) {
+      if (g.cells.some(([gr,gc])=>gr===r&&gc===c)) { alreadyPending=true; break; }
+    }
+    if (alreadyPending) return;
+    const key = r * COLS + c;
+    if (extendExtra.has(key)) { extendExtra.delete(key); }
+    else {
+      extendExtra.add(key);
+      playTone(550,'sine',0.08,0.14);
+      spawnSelectRipple(r, c);
+    }
+    refreshExtendHighlights();
+    return;
+  }
+
+  if (busy) return;
+  const {r, c} = kbCursor;
+
+  if (kbMoveFrom === null) {
+    // First confirm = select this cell
+    kbMoveFrom = {r, c};
+    selected = {r, c};
+    cellEls[r]?.[c]?.classList.add('sel');
+    highlightConnected(r, c);
+    spawnSelectRipple(r, c);
+    playTone(360, 'sine', 0.08, 0.13);
+  } else {
+    // Second confirm = cancel selection (same cell) or swap (if adjacent)
+    if (kbMoveFrom.r === r && kbMoveFrom.c === c) {
+      // Cancel
+      cellEls[r]?.[c]?.classList.remove('sel');
+      document.querySelectorAll('.cell.connected-hi').forEach(cc=>cc.classList.remove('connected-hi'));
+      kbMoveFrom = null;
+      selected = null;
+    } else {
+      trySwap(kbMoveFrom.r, kbMoveFrom.c, r, c);
+      cellEls[kbMoveFrom.r]?.[kbMoveFrom.c]?.classList.remove('sel');
+      document.querySelectorAll('.cell.connected-hi').forEach(cc=>cc.classList.remove('connected-hi'));
+      kbMoveFrom = null;
+      selected = null;
+    }
+  }
+}
+
+// Draw a subtle cursor indicator on top of current KB cell
+let kbCursorEl = null;
+function drawKbCursor() {
+  // Remove old
+  if (kbCursorEl) kbCursorEl.remove();
+  if (!gameRunning) return;
+  const cell = cellEls[kbCursor.r]?.[kbCursor.c];
+  if (!cell) return;
+  const marker = document.createElement('div');
+  marker.id = 'kb-cursor';
+  marker.style.cssText = `
+    position:absolute;inset:-2px;border-radius:5px;pointer-events:none;z-index:8;
+    border:2px solid rgba(255,255,255,0.75);
+    box-shadow:0 0 8px rgba(255,255,255,0.3);
+    animation:kbCursorBlink 0.9s ease-in-out infinite;
+  `;
+  cell.appendChild(marker);
+  kbCursorEl = marker;
+}
+
+document.addEventListener('keydown', e => {
+  if (!gameRunning && !extendActive) return;
+  switch(e.key) {
+    case 'ArrowUp':    e.preventDefault(); moveCursor(-1,  0); break;
+    case 'ArrowDown':  e.preventDefault(); moveCursor( 1,  0); break;
+    case 'ArrowLeft':  e.preventDefault(); moveCursor( 0, -1); break;
+    case 'ArrowRight': e.preventDefault(); moveCursor( 0,  1); break;
+    case ' ':          e.preventDefault(); kbConfirm();        break;
+  }
+});
+
+function clearSelected() {
+  if (selected) {
+    const cell = cellEls[selected.r]?.[selected.c];
+    if (cell) cell.classList.remove('sel');
+    // clear any group highlights
+    document.querySelectorAll('.cell.connected-hi').forEach(c=>c.classList.remove('connected-hi'));
+  }
+  selected = null; dragStart = null;
+}
+
+function highlightConnected(r, c) {
+  document.querySelectorAll('.cell.connected-hi').forEach(c=>c.classList.remove('connected-hi'));
+  const type = grid[r][c]?.type;
+  if (!type || !['red','blue','purple','green'].includes(type)) return;
+  // flood fill to find connected
+  const visited = new Set();
+  const queue = [[r,c]];
+  visited.add(r*COLS+c);
+  while (queue.length) {
+    const [cr,cc] = queue.shift();
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
+      const nr=cr+dr, nc=cc+dc;
+      if (nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+      const key=nr*COLS+nc;
+      if (visited.has(key)) return;
+      if (grid[nr][nc]?.type !== type) return;
+      visited.add(key); queue.push([nr,nc]);
+    });
+  }
+  if (visited.size >= 3) {
+    visited.forEach(key=>{
+      const kr=Math.floor(key/COLS), kc=key%COLS;
+      cellEls[kr]?.[kc]?.classList.add('connected-hi');
+    });
+  }
+}
+
+// ===== SWAP & MATCH =====
+function trySwap(r1,c1,r2,c2) {
+  if (busy) return;
+  const dr=Math.abs(r1-r2), dc=Math.abs(c1-c2);
+  if (dr+dc!==1) return;
+  doSwap(r1,c1,r2,c2);
+  setTimeout(()=>processMatches(true), 80);
+}
+
+function doSwap(r1,c1,r2,c2) {
+  const tmp=grid[r1][c1]; grid[r1][c1]=grid[r2][c2]; grid[r2][c2]=tmp;
+  refreshCell(r1,c1,false); refreshCell(r2,c2,false);
+  playTone(300,'sine',0.08,0.12);
+}
+
+// ===== FLOOD-FILL CONNECTED MATCH =====
+// Returns array of groups: each group = { type, cells:[[r,c],...] }
+// A group qualifies for removal only if it has 3+ connected same-color cells.
+function findConnectedGroups() {
+  const visited = Array.from({length:ROWS}, ()=>new Array(COLS).fill(false));
+  const groups = [];
+  const DIRS = [[0,1],[0,-1],[1,0],[-1,0]];
+  const MATCHABLE = new Set(['red','blue','purple','green']);
+
+  for (let r=0; r<ROWS; r++) {
+    for (let c=0; c<COLS; c++) {
+      if (visited[r][c]) continue;
+      const node = grid[r][c];
+      if (!node || !MATCHABLE.has(node.type)) { visited[r][c]=true; continue; }
+
+      // BFS flood fill
+      const type = node.type;
+      const cells = [];
+      const queue = [[r,c]];
+      visited[r][c] = true;
+      while (queue.length) {
+        const [cr,cc] = queue.shift();
+        cells.push([cr,cc]);
+        for (const [dr,dc] of DIRS) {
+          const nr=cr+dr, nc=cc+dc;
+          if (nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+          if (visited[nr][nc]) continue;
+          if (grid[nr][nc]?.type !== type) continue;
+          visited[nr][nc] = true;
+          queue.push([nr,nc]);
+        }
+      }
+      if (cells.length >= 3) groups.push({type, cells});
+    }
+  }
+  return groups;
+}
+
+function findMatches() {
+  // Flatten all qualifying groups into a deduplicated list of [r,c]
+  const groups = findConnectedGroups();
+  const seen = new Set();
+  const result = [];
+  for (const g of groups) {
+    for (const [r,c] of g.cells) {
+      const key = r*COLS+c;
+      if (!seen.has(key)) { seen.add(key); result.push([r,c]); }
+    }
+  }
+  return result;
+}
+
+function processMatches(userTriggered) {
+  // If already in extend phase, don't interrupt — let it run out naturally
+  if (extendActive) return;
+
+  const groups = findConnectedGroups();
+  if (groups.length === 0) {
+    busy = false;
+    return;
+  }
+
+  // Brief pop animation to signal "match found", then start extend phase
+  const allCells = [];
+  const seen = new Set();
+  for (const g of groups) {
+    for (const [r,c] of g.cells) {
+      const key = r*COLS+c;
+      if (!seen.has(key)) { seen.add(key); allCells.push([r,c]); }
+    }
+  }
+  allCells.forEach(([r,c])=>{
+    const el = cellEls[r][c]?.firstChild;
+    if (el) {
+      el.style.transition = 'transform 0.12s';
+      el.style.transform  = 'scale(1.18)';
+      setTimeout(()=>{ if(el) el.style.transform='scale(1)'; }, 130);
+    }
+  });
+
+  busy = false; // will be managed by extendPhase
+  setTimeout(()=>startExtendPhase(groups), 70);
+}
+
+function destroyMatches(groups, allCells) {
+  let totalPts = 0, synchroGain = 0;
+
+  for (const {type, cells} of groups) {
+    const count = cells.length;
+    // Size bonus multiplier: 3=1x, 4=1.5x, 5=2x, 6+=3x
+    const sizeMul = count >= 6 ? 3 : count >= 5 ? 2 : count >= 4 ? 1.5 : 1;
+
+    let basePerNode = 0;
+    if (type==='red')    basePerNode = 50;
+    else if (type==='blue')   basePerNode = 20;
+    else if (type==='purple') basePerNode = 25;
+    else if (type==='green')  basePerNode = 20;
+
+    const groupPts = Math.round(basePerNode * count * sizeMul * chainCount * (synchroActive?2:1));
+    totalPts += groupPts;
+    synchroGain += 0.04 * count + (type==='purple' ? 0.10 * count : 0);
+
+    // Blue/Green: restore chain timer proportional to group size
+    if (type==='blue')  chainTimer = Math.min(chainTimer + 0.6*count, chainTimerMax);
+    if (type==='green') chainTimer = Math.min(chainTimer + 0.9*count, chainTimerMax);
+
+    // FX per group - burst from centroid
+    const cx = cells.reduce((s,[,c])=>s+c,0)/count;
+    const cy = cells.reduce((s,[r])=>s+r,0)/count;
+    const cellW = cellEls[0][0]?.getBoundingClientRect().width || 50;
+    const originRect = cellEls[Math.round(cy)]?.[Math.round(cx)]?.getBoundingClientRect();
+    const ox = originRect ? originRect.left + originRect.width/2  : window.innerWidth/2;
+    const oy = originRect ? originRect.top  + originRect.height/2 : window.innerHeight/2;
+    spawnParticles(ox, oy, type, 8 + count*3);
+    spawnRipple(ox, oy, type, count >= 4);
+    if (count >= 5) { spawnParticles(ox, oy, type, count*4); spawnRipple(ox, oy, type, true); }
+    playDestroy(type, count);
+  }
+
+  // Handle gimmick nodes touched by match area (adjacent static, chaos, boost)
+  allCells.forEach(([r,c])=>{
+    const node = grid[r][c];
+    if (!node) return;
+    const type = node.type;
+    const cellRect = cellEls[r][c].getBoundingClientRect();
+    const cx = cellRect.left+cellRect.width/2, cy = cellRect.top+cellRect.height/2;
+
+    if (type==='chaos') { setTimeout(()=>chaosTrigger(), 100); }
+    if (type==='boost') { setTimeout(()=>boostTrigger(r,c,cx,cy), 80); }
+
+    grid[r][c] = null;
+    if (cellEls[r][c]) cellEls[r][c].innerHTML = '';
+  });
+
+  // Damage adjacent STATIC nodes
+  const staticDirs = [[0,1],[0,-1],[1,0],[-1,0]];
+  const damagedStatic = new Set();
+  allCells.forEach(([r,c])=>{
+    staticDirs.forEach(([dr,dc])=>{
+      const nr=r+dr, nc=c+dc;
+      if (nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+      const snode = grid[nr][nc];
+      if (!snode||snode.type!=='static') return;
+      const key=nr*COLS+nc;
+      if (damagedStatic.has(key)) return;
+      damagedStatic.add(key);
+      snode.hp--;
+      if (snode.hp <= 0) {
+        const sr = cellEls[nr][nc].getBoundingClientRect();
+        spawnParticles(sr.left+sr.width/2, sr.top+sr.height/2, 'static', 10);
+        totalPts += 80 * chainCount * (synchroActive?2:1);
+        grid[nr][nc] = null;
+        if (cellEls[nr][nc]) cellEls[nr][nc].innerHTML = '';
+      } else {
+        refreshCell(nr, nc, false);
+        // visual damage flicker
+        const el = cellEls[nr][nc].firstChild;
+        if (el) { el.style.opacity='0.4'; setTimeout(()=>el&&(el.style.opacity=''), 200); }
+      }
+    });
+  });
+
+  // Chain advance
+  if (!synchroActive) chainTimer = chainTimerMax;
+  chainCount++;
+  chainMax = Math.max(chainMax, chainCount);
+  updateChainUI();
+  playChainNote(chainCount);
+
+  // Synchro
+  synchroGauge = Math.min(1, synchroGauge + synchroGain);
+  updateSynchroUI();
+  if (synchroGauge >= 1 && !synchroActive) activateSynchro();
+
+  // Score
+  score += totalPts;
+  updateScoreUI();
+  showScoreFlash(totalPts, allCells.length);
+
+  // Screen flash on big combos
+  const bigCombo = allCells.length >= 6 || chainCount >= 5;
+  if (bigCombo) screenFlash = allCells.length >= 10 ? 2 : 1;
+
+  // Chain name popup at milestones
+  const milestone = [3,6,10,15,20];
+  if (milestone.includes(chainCount)) showChainPopup(chainCount);
+
+  // Fall & refill → recurse for cascades
+  setTimeout(()=>{
+    fallAndFill();
+    setTimeout(()=>processMatches(false), 200);
+  }, 60);
+}
+
+function fallAndFill() {
+  const pureMode = mode==='pure';
+  for(let c=0;c<COLS;c++){
+    let writeRow=ROWS-1;
+    for(let r=ROWS-1;r>=0;r--){
+      if(grid[r][c]!==null){
+        if(writeRow!==r){ grid[writeRow][c]=grid[r][c]; grid[r][c]=null; }
+        writeRow--;
+      }
+    }
+    for(let r=writeRow;r>=0;r--){
+      grid[r][c]=makeNode(randomType(gamePhase, pureMode));
+    }
+  }
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) refreshCell(r,c, grid[r][c]?.type!==null);
+}
+
+// ===== GIMMICKS =====
+function chaosTrigger() {
+  const r=Math.random();
+  if(r<0.35){ // random color scramble
+    for(let i=0;i<8;i++){
+      const rr=Math.floor(Math.random()*ROWS), rc=Math.floor(Math.random()*COLS);
+      grid[rr][rc]=makeNode(COLORS[Math.floor(Math.random()*4)]);
+      refreshCell(rr,rc,true);
+    }
+  } else if(r<0.65){ // clear a row
+    const row=Math.floor(Math.random()*ROWS);
+    for(let c=0;c<COLS;c++)grid[row][c]=null;
+    setTimeout(()=>{fallAndFill();processMatches(false);},100);
+  } else { // spawn boost nodes
+    for(let i=0;i<2;i++){
+      const rr=Math.floor(Math.random()*ROWS), rc=Math.floor(Math.random()*COLS);
+      grid[rr][rc]=makeNode('boost');
+      refreshCell(rr,rc,true);
+    }
+  }
+  screenFlash=0.8;
+  playTone(180,'sawtooth',0.3,0.2, Math.random()*200-100);
+}
+
+function boostTrigger(r,c,cx,cy) {
+  // clear 3x3
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+    const nr=r+dr, nc=c+dc;
+    if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS){ grid[nr][nc]=null; if(cellEls[nr][nc])cellEls[nr][nc].innerHTML=''; }
+  }
+  spawnParticles(cx,cy,'boost',30);
+  screenFlash=1.5;
+  score+=500*chainCount*(synchroActive?2:1);
+  updateScoreUI();
+  chainTimer=chainTimerMax;
+  playTone(880,'sine',0.4,0.3);
+}
+
+// ===== SYNCHRO =====
+function activateSynchro() {
+  synchroActive=true;
+  synchroTimer=12;
+  synchroGauge=0;
+  document.body.classList.add('synchro-mode');
+  document.getElementById('synchro-bar').style.background='#fff';
+  playSynchro();
+  showChainPopup('SYNCHRO');
+  screenFlash=2;
+}
+
+function deactivateSynchro() {
+  synchroActive=false;
+  document.body.classList.remove('synchro-mode');
+  document.getElementById('synchro-bar').style.background='var(--purple)';
+}
+
+// ===== UI UPDATES =====
+function updateChainUI() {
+  const el=document.getElementById('chain-display');
+  const nm=document.getElementById('chain-name');
+  const colors={1:'#80b4ff',3:'#06d6a0',6:'#ffd166',10:'#ff6b6b',15:'#c03aff',20:'#fff'};
+  let col='#80b4ff';
+  [1,3,6,10,15,20].forEach(n=>{ if(chainCount>=n)col=colors[n]; });
+  el.textContent=chainCount+'x CHAIN';
+  el.style.color=col;
+  // name
+  let name='NORMAL';
+  Object.entries(CHAIN_NAMES).forEach(([k,v])=>{ if(chainCount>= +k)name=v; });
+  nm.textContent=name; nm.style.color=col;
+  // chain bar color
+  document.getElementById('chain-bar').style.background=col;
+  document.getElementById('chain-bar').style.boxShadow=`0 0 8px ${col}`;
+}
+
+function updateSynchroUI() {
+  const pct=(synchroActive?1:synchroGauge)*100;
+  document.getElementById('synchro-bar').style.width=pct+'%';
+  document.getElementById('synchro-label-right').textContent=Math.round(pct)+'%';
+}
+
+function updateScoreUI() {
+  document.getElementById('score-val').textContent=score.toLocaleString();
+}
+
+function showScoreFlash(pts, count) {
+  if (pts < 20) return;
+  const el = document.getElementById('score-flash');
+  const sizeLabel = count >= 10 ? ' 🔥MEGA' : count >= 6 ? ' ✨BIG' : count >= 4 ? ' ⚡NICE' : '';
+  el.textContent = '+' + pts.toLocaleString() + sizeLabel;
+  el.style.color = count >= 6 ? '#ffd166' : count >= 4 ? '#06d6a0' : '#ffffff';
+  el.style.fontSize = Math.min(13 + count * 2.5, 38) + 'px';
+  el.style.textShadow = count >= 6 ? '0 0 20px rgba(255,214,0,0.7)' : '0 0 12px rgba(255,255,255,0.4)';
+  el.style.opacity = '1';
+  el.style.top  = (38 + Math.random() * 18) + '%';
+  el.style.left = (30 + Math.random() * 35) + '%';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', count >= 5 ? 1000 : 650);
+}
+
+function showChainPopup(val) {
+  const el=document.getElementById('chain-popup');
+  el.textContent=val==='SYNCHRO'?'SYNCHRO ENGAGED':val+'x CHAIN!';
+  el.style.opacity='1';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.opacity='0',900);
+}
+
+// ===== CHAIN TIMER =====
+function updateChainTimer(dt) {
+  if (synchroActive) return;
+  if (extendActive) return; // freeze chain timer while player can tap extras
+  chainTimer -= dt;
+  const pct = Math.max(0, chainTimer / chainTimerMax) * 100;
+  document.getElementById('chain-bar').style.width = pct + '%';
+  if (chainTimer <= 0) breakChain();
+}
+
+function breakChain() {
+  if(chainCount>1) {
+    playBreak();
+    showChainPopup('BREAK');
+  }
+  chainCount=1; chainTimer=chainTimerMax;
+  updateChainUI();
+}
+
+// ===== PHASE =====
+function updatePhase(dt) {
+  phaseTimer+=dt;
+  const prevPhase=gamePhase;
+  if(mode==='standard'||mode==='pure'){
+    if(phaseTimer>PHASE_TIMES[4]&&gamePhase<5)gamePhase=5;
+    else if(phaseTimer>PHASE_TIMES[3]&&gamePhase<4)gamePhase=4;
+    else if(phaseTimer>PHASE_TIMES[2]&&gamePhase<3)gamePhase=3;
+    else if(phaseTimer>PHASE_TIMES[1]&&gamePhase<2)gamePhase=2;
+  }
+  if(gamePhase!==prevPhase){
+    document.getElementById('phase-val').textContent='P'+gamePhase;
+    showChainPopup('PHASE '+gamePhase);
+    chainTimerMax=Math.max(2.5, 4.5-(gamePhase-1)*0.4);
+  }
+}
+
+// ===== GAME LOOP =====
+function gameLoop(ts) {
+  if(!gameRunning){return;}
+  const dt=Math.min((ts-lastTime)/1000, 0.1);
+  lastTime=ts;
+  bgT+=dt;
+
+  updateChainTimer(dt);
+  updatePhase(dt);
+  tickExtend(dt);
+
+  // synchro timer
+  if(synchroActive){
+    synchroTimer-=dt;
+    if(synchroTimer<=0)deactivateSynchro();
+    updateSynchroUI();
+  } else {
+    updateSynchroUI();
+  }
+
+  // game timer
+  if(mode!=='endless'){
+    timeLeft-=dt;
+    const pct=Math.max(0,timeLeft/totalTime)*100;
+    document.getElementById('timer-bar').style.width=pct+'%';
+    document.getElementById('timer-bar').style.background=pct>30?'rgba(100,180,255,0.6)':'rgba(255,100,100,0.7)';
+    document.getElementById('timer-text').textContent=Math.ceil(timeLeft);
+    if(timeLeft<=0)endGame();
+  }
+
+  drawBg(); drawFx();
+  animId=requestAnimationFrame(gameLoop);
+}
+
+// ===== INIT / END =====
+function initGame() {
+  initAudio();
+  score=0; chainCount=1; chainTimer=4.5; chainTimerMax=4.5;
+  synchroGauge=0; synchroActive=false; gamePhase=1; phaseTimer=0;
+  chainMax=0; busy=false; selected=null;
+  staticHits={};
+  extendActive=false; extendGroups=[]; extendExtra=new Set(); extendRings=[];
+  particles.length=0; ripples.length=0;
+  document.body.classList.remove('synchro-mode');
+
+  totalTime=mode==='speed'?30:90;
+  timeLeft=totalTime;
+
+  buildGrid(1, mode==='pure');
+  renderGrid();
+
+  document.getElementById('title').style.display='none';
+  document.getElementById('gameover').style.display='none';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('game').style.display='flex';
+  document.getElementById('timer-wrap').style.display=mode==='endless'?'none':'block';
+  document.getElementById('timer-text').textContent=mode==='endless'?'∞':totalTime;
+
+  updateChainUI(); updateScoreUI(); updateSynchroUI();
+  document.getElementById('phase-val').textContent='P1';
+  document.getElementById('chain-bar').style.width='100%';
+
+  gameRunning=true;
+  lastTime=performance.now();
+  cancelAnimationFrame(animId);
+  animId=requestAnimationFrame(gameLoop);
+
+  // keyboard cursor
+  kbCursor = {r:2, c:2}; kbMoveFrom = null;
+  setTimeout(()=>drawKbCursor(), 100);
+
+  // first match check
+  setTimeout(()=>processMatches(false),300);
+}
+
+function endGame() {
+  gameRunning=false;
+  cancelAnimationFrame(animId);
+  if (kbCursorEl) { kbCursorEl.remove(); kbCursorEl=null; }
+  playBreak();
+
+  const goTitles=['SIGNAL LOST','DISCONNECTED','FLOW ENDED'];
+  const goSubs=['CONNECTION TERMINATED','NEURAL LINK SEVERED','SYNC FAILED'];
+  const idx=Math.floor(Math.random()*goTitles.length);
+  document.getElementById('go-title').textContent=goTitles[idx];
+  document.getElementById('go-sub').textContent=goSubs[idx];
+  document.getElementById('go-score').textContent=score.toLocaleString();
+  document.getElementById('go-chain').textContent=chainMax;
+
+  const bestKey='synapse_best_'+mode;
+  const prev=+(localStorage.getItem(bestKey)||0);
+  const best=Math.max(prev,score);
+  localStorage.setItem(bestKey, best);
+  document.getElementById('go-best').textContent=best.toLocaleString();
+
+  document.getElementById('hud').style.display='none';
+  document.getElementById('game').style.display='none';
+  document.getElementById('gameover').style.display='flex';
+}
+
+function returnTitle() {
+  document.getElementById('gameover').style.display='none';
+  document.getElementById('title').style.display='flex';
+  updateHiDisplay();
+  drawBg();
+}
+
+function updateHiDisplay() {
+  const bestKey='synapse_best_'+mode;
+  const best=localStorage.getItem(bestKey)||0;
+  document.getElementById('hi-display').textContent='BEST  '+Number(best).toLocaleString();
+}
+
+// init title bg loop
+(function titleLoop(ts){
+  bgT = ts / 1000;
+  if (!gameRunning) { drawBg(); }
+  requestAnimationFrame(titleLoop);
+})(0);
+
+updateHiDisplay();
+</script>
+</body>
+</html>
