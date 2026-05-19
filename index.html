@@ -940,7 +940,7 @@ function createNodeEl(type) {
   n.className=`node n-${type}`;
   const inner=document.createElement('div');
   inner.className='node-inner';
-  const labels={red:'SYN',blue:'AMP',purple:'RES',green:'GEN',static:'////',chaos:'???',boost:'!!!'};
+  const labels={red:'≋',blue:'∿',purple:'✧',green:'◎',static:'////',chaos:'???',boost:'!!!'};
   inner.textContent=labels[type]||type.toUpperCase().slice(0,3);
   n.appendChild(inner);
   return n;
@@ -1688,6 +1688,13 @@ function endGame() {
 }
 
 function returnTitle() {
+  // エフェクトをすべてクリア
+  particles.length = 0;
+  ripples.length   = 0;
+  extendRings.length = 0;
+  extendActive = false;
+  fxX.clearRect(0, 0, fxC.width, fxC.height);
+
   document.getElementById('gameover').style.display='none';
   document.getElementById('title').style.display='flex';
   updateHiDisplay();
@@ -1703,7 +1710,7 @@ function updateHiDisplay() {
 // init title bg loop
 (function titleLoop(ts){
   bgT = ts / 1000;
-  if (!gameRunning) { drawBg(); }
+  if (!gameRunning) { drawBg(); drawFx(); }
   requestAnimationFrame(titleLoop);
 })(0);
 
