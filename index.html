@@ -161,6 +161,9 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
 /* score flash */
 #score-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:40;font-family:'Orbitron',sans-serif;font-size:clamp(14px,4vw,22px);font-weight:700;pointer-events:none;opacity:0;color:#fff;transition:opacity 0.35s ease-out;letter-spacing:0.05em;}
 
+/* fade overlay */
+#fade-overlay{position:fixed;inset:0;z-index:200;background:#000;opacity:0;pointer-events:none;transition:opacity 0.55s ease;}
+
 /* kb cursor blink */
 @keyframes kbCursorBlink{0%,100%{border-color:rgba(255,255,255,0.75);box-shadow:0 0 8px rgba(255,255,255,0.25);}50%{border-color:rgba(255,255,255,1);box-shadow:0 0 14px rgba(255,255,255,0.55);}}
 @keyframes groupHighlight{0%{box-shadow:0 0 0 2px rgba(255,255,255,0.0)}50%{box-shadow:0 0 0 3px rgba(255,255,255,0.6),0 0 16px rgba(255,255,255,0.2)}100%{box-shadow:0 0 0 2px rgba(255,255,255,0.0)}}
@@ -180,6 +183,7 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
 <canvas id="bg"></canvas>
 <canvas id="fx"></canvas>
 <div id="vignette"></div>
+<div id="fade-overlay"></div>
 
 <!-- Background video (place bg-video.mp4 in same folder) -->
 <video id="bg-video"
@@ -194,32 +198,33 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
   <div class="t-sub">NEURAL CHAIN SYSTEM</div>
   <div style="font-size:clamp(12px,3vw,16px);color:rgba(200,215,255,0.55);margin-bottom:6px;letter-spacing:0.05em;">光に触れると、世界が静かに応える。</div>
   <div style="font-size:clamp(9px,2vw,11px);color:rgba(150,170,220,0.32);margin-bottom:32px;letter-spacing:0.2em;">Touch the signal. Feel the resonance.</div>
-  <div class="t-modes">
+  <div class="t-modes" style="grid-template-columns:repeat(3,1fr);max-width:480px;">
     <div class="mode-btn sel" data-mode="standard" onclick="selectMode('standard',this)">
       <div class="mode-name">STANDARD</div>
-      <div class="mode-desc">Balance of chain and score mastery.</div>
+      <div class="mode-desc">Signal flow, no limits on expression.</div>
       <div class="mode-tag">90 SEC</div>
     </div>
     <div class="mode-btn" data-mode="speed" onclick="selectMode('speed',this)">
       <div class="mode-name">SPEED RUN</div>
-      <div class="mode-desc">Maximum intensity, minimum time.</div>
+      <div class="mode-desc">Pure resonance, compressed in time.</div>
       <div class="mode-tag">30 SEC</div>
-    </div>
-    <div class="mode-btn" data-mode="pure" onclick="selectMode('pure',this)">
-      <div class="mode-name">PURE</div>
-      <div class="mode-desc">No gimmicks. Only signal flow.</div>
-      <div class="mode-tag">90 SEC · CLEAN</div>
     </div>
     <div class="mode-btn" data-mode="endless" onclick="selectMode('endless',this)">
       <div class="mode-name">ENDLESS</div>
-      <div class="mode-desc">No time limit. The chain is all.</div>
+      <div class="mode-desc">No time. Just the flow.</div>
       <div class="mode-tag">∞ NO LIMIT</div>
     </div>
   </div>
-  <button id="start-btn" onclick="initGame()">TOUCH  —  RESONATE  —  FLOW</button>
+  <button id="start-btn" onclick="startCountdown()">TOUCH  —  RESONATE  —  FLOW</button>
   <div class="t-hi" id="hi-display">BEST — ···</div>
   <div style="font-size:10px;color:rgba(180,210,255,0.22);margin-top:12px;letter-spacing:0.12em;">急がなくていい。ただ、流れに触れていればいい。</div>
   <div style="font-size:9px;color:rgba(140,160,200,0.18);margin-top:4px;letter-spacing:0.15em;">↑↓←→ MOVE &nbsp;·&nbsp; SPACE SELECT &nbsp;·&nbsp; DRAG</div>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countdown" style="display:none;position:fixed;inset:0;z-index:90;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div id="countdown-num" style="font-family:'Orbitron',sans-serif;font-size:clamp(72px,18vw,110px);font-weight:900;color:rgba(200,220,255,0.90);text-shadow:0 0 40px rgba(120,160,255,0.5);"></div>
+  <div id="countdown-msg" style="font-size:13px;letter-spacing:0.35em;color:rgba(160,190,255,0.40);"></div>
 </div>
 
 <!-- HUD -->
@@ -861,6 +866,25 @@ const COLS=6, ROWS=6;
 const COLORS=['red','blue','purple','green'];
 const CHAIN_NAMES={1:'NORMAL',3:'BOOST',6:'RESONANCE',10:'SYNCHRONIZE',15:'TRANSCEND',20:'ASCEND'};
 
+// ===== FADE HELPERS =====
+function fadeOut(dur=550) {
+  return new Promise(resolve => {
+    const el = document.getElementById('fade-overlay');
+    el.style.pointerEvents = 'all';
+    el.style.transition = `opacity ${dur}ms ease`;
+    el.style.opacity = '1';
+    setTimeout(resolve, dur);
+  });
+}
+function fadeIn(dur=550) {
+  return new Promise(resolve => {
+    const el = document.getElementById('fade-overlay');
+    el.style.transition = `opacity ${dur}ms ease`;
+    el.style.opacity = '0';
+    setTimeout(() => { el.style.pointerEvents='none'; resolve(); }, dur);
+  });
+}
+
 let phaseTimer=0;
 let grid=[], cellEls=[];
 let selected=null, busy=false;
@@ -892,11 +916,7 @@ function sizeGrid() {
 function makeNode(type) { return {type, hp: type==='static'?2:1}; }
 
 function randomType(phase, pureMode) {
-  if (pureMode) return COLORS[Math.floor(Math.random()*4)];
-  const r = Math.random();
-  if (phase>=3 && r<0.05) return 'chaos';
-  if (phase>=2 && r<0.08) return 'static';
-  if (r<0.04) return 'boost';
+  // 全モードギミックなし — 常に4色のみ
   return COLORS[Math.floor(Math.random()*4)];
 }
 
@@ -1527,7 +1547,7 @@ function updateScoreUI() {
 function showScoreFlash(pts, count) {
   if (pts < 20) return;
   const el = document.getElementById('score-flash');
-  const sizeLabel = count >= 10 ? ' 🔥MEGA' : count >= 6 ? ' ✨BIG' : count >= 4 ? ' ⚡NICE' : '';
+  const sizeLabel = count >= 10 ? '  MEGA' : count >= 6 ? '  BIG' : count >= 4 ? '  NICE' : '';
   el.textContent = '+' + pts.toLocaleString() + sizeLabel;
   el.style.color = count >= 6 ? '#ffd166' : count >= 4 ? '#06d6a0' : '#ffffff';
   el.style.fontSize = Math.min(13 + count * 2.5, 38) + 'px';
@@ -1618,6 +1638,36 @@ function gameLoop(ts) {
 }
 
 // ===== INIT / END =====
+async function startCountdown() {
+  await fadeOut(480);
+  document.getElementById('title').style.display = 'none';
+  const cd = document.getElementById('countdown');
+  cd.style.display = 'flex';
+  document.getElementById('countdown-msg').textContent = mode.toUpperCase();
+  await fadeIn(400);
+
+  let n = 3;
+  document.getElementById('countdown-num').textContent = n;
+
+  await new Promise(resolve => {
+    const iv = setInterval(()=>{
+      n--;
+      if (n > 0) {
+        document.getElementById('countdown-num').textContent = n;
+      } else {
+        clearInterval(iv);
+        document.getElementById('countdown-num').textContent = '—';
+        setTimeout(resolve, 500);
+      }
+    }, 860);
+  });
+
+  await fadeOut(420);
+  cd.style.display = 'none';
+  initGame();
+  await fadeIn(520);
+}
+
 function initGame() {
   initAudio();
   score=0; chainCount=1; chainTimer=4.5; chainTimerMax=4.5;
@@ -1631,7 +1681,7 @@ function initGame() {
   totalTime=mode==='speed'?30:90;
   timeLeft=totalTime;
 
-  buildGrid(1, mode==='pure');
+  buildGrid(1, true); // 全モードギミックなし
   renderGrid();
 
   document.getElementById('title').style.display='none';
@@ -1661,15 +1711,17 @@ function initGame() {
   setTimeout(()=>processMatches(false),300);
 }
 
-function endGame() {
+async function endGame() {
   gameRunning=false;
   cancelAnimationFrame(animId);
   if (kbCursorEl) { kbCursorEl.remove(); kbCursorEl=null; }
   stopAmbientDrone();
   playBreak();
 
-  const goTitles=['SIGNAL LOST','DISCONNECTED','FLOW ENDED'];
-  const goSubs=['CONNECTION TERMINATED','NEURAL LINK SEVERED','SYNC FAILED'];
+  await fadeOut(500);
+
+  const goTitles=['FLOW ENDED','SIGNAL LOST','DISCONNECTED'];
+  const goSubs=['THE SIGNAL FADES INTO SILENCE','NEURAL LINK SEVERED','CONNECTION TERMINATED'];
   const idx=Math.floor(Math.random()*goTitles.length);
   document.getElementById('go-title').textContent=goTitles[idx];
   document.getElementById('go-sub').textContent=goSubs[idx];
@@ -1685,9 +1737,13 @@ function endGame() {
   document.getElementById('hud').style.display='none';
   document.getElementById('game').style.display='none';
   document.getElementById('gameover').style.display='flex';
+
+  await fadeIn(500);
 }
 
-function returnTitle() {
+async function returnTitle() {
+  await fadeOut(480);
+
   // エフェクトをすべてクリア
   particles.length = 0;
   ripples.length   = 0;
@@ -1699,6 +1755,8 @@ function returnTitle() {
   document.getElementById('title').style.display='flex';
   updateHiDisplay();
   drawBg();
+
+  await fadeIn(500);
 }
 
 function updateHiDisplay() {
