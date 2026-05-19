@@ -79,36 +79,36 @@ canvas#fx{position:fixed;inset:0;z-index:5;pointer-events:none;}
 .node{width:100%;height:100%;border-radius:3px;display:flex;align-items:center;justify-content:center;position:relative;transition:transform 0.12s,opacity 0.12s,box-shadow 0.2s;overflow:hidden;}
 .node::before{content:'';position:absolute;inset:0;border-radius:3px;opacity:0.15;}
 .node::after{content:'';position:absolute;inset:0;border-radius:3px;border:1px solid rgba(255,255,255,0.18);}
-/* node colors — softer glow, deeper inset light */
+/* node colors — identifiable color with subtle glow */
 .n-red{
-  background:rgba(255,58,92,0.13);
-  box-shadow:0 0 18px rgba(255,58,92,0.30),0 0 36px rgba(255,58,92,0.10),inset 0 0 18px rgba(255,80,110,0.12);
+  background:rgba(255,58,92,0.28);
+  box-shadow:0 0 10px rgba(255,58,92,0.22),inset 0 0 10px rgba(255,80,110,0.10);
   animation:nodeBreathRed 3.2s ease-in-out infinite;
 }
-.n-red::before{background:radial-gradient(circle at 30% 30%,rgba(255,140,160,0.55),transparent 65%);}
+.n-red::before{background:radial-gradient(circle at 30% 30%,rgba(255,140,160,0.40),transparent 65%);}
 .n-blue{
-  background:rgba(58,240,255,0.11);
-  box-shadow:0 0 18px rgba(58,240,255,0.28),0 0 36px rgba(58,240,255,0.09),inset 0 0 18px rgba(80,220,255,0.10);
+  background:rgba(58,240,255,0.22);
+  box-shadow:0 0 10px rgba(58,240,255,0.18),inset 0 0 10px rgba(80,220,255,0.08);
   animation:nodeBreathBlue 3.8s ease-in-out infinite;
 }
-.n-blue::before{background:radial-gradient(circle at 30% 30%,rgba(140,245,255,0.55),transparent 65%);}
+.n-blue::before{background:radial-gradient(circle at 30% 30%,rgba(140,245,255,0.40),transparent 65%);}
 .n-purple{
-  background:rgba(192,58,255,0.13);
-  box-shadow:0 0 18px rgba(192,58,255,0.32),0 0 36px rgba(192,58,255,0.10),inset 0 0 18px rgba(210,80,255,0.12);
+  background:rgba(192,58,255,0.28);
+  box-shadow:0 0 10px rgba(192,58,255,0.22),inset 0 0 10px rgba(210,80,255,0.10);
   animation:nodeBreathPurple 2.9s ease-in-out infinite;
 }
-.n-purple::before{background:radial-gradient(circle at 30% 30%,rgba(230,140,255,0.55),transparent 65%);}
+.n-purple::before{background:radial-gradient(circle at 30% 30%,rgba(230,140,255,0.40),transparent 65%);}
 .n-green{
-  background:rgba(58,255,140,0.11);
-  box-shadow:0 0 18px rgba(58,255,140,0.28),0 0 36px rgba(58,255,140,0.08),inset 0 0 18px rgba(80,255,160,0.10);
+  background:rgba(58,255,140,0.22);
+  box-shadow:0 0 10px rgba(58,255,140,0.18),inset 0 0 10px rgba(80,255,160,0.08);
   animation:nodeBreathGreen 4.1s ease-in-out infinite;
 }
-.n-green::before{background:radial-gradient(circle at 30% 30%,rgba(140,255,200,0.55),transparent 65%);}
+.n-green::before{background:radial-gradient(circle at 30% 30%,rgba(140,255,200,0.40),transparent 65%);}
 
-@keyframes nodeBreathRed   {0%,100%{box-shadow:0 0 14px rgba(255,58,92,0.25),0 0 28px rgba(255,58,92,0.07),inset 0 0 14px rgba(255,80,110,0.09);}50%{box-shadow:0 0 26px rgba(255,58,92,0.45),0 0 52px rgba(255,58,92,0.16),inset 0 0 24px rgba(255,80,110,0.18);}}
-@keyframes nodeBreathBlue  {0%,100%{box-shadow:0 0 14px rgba(58,240,255,0.22),0 0 28px rgba(58,240,255,0.06),inset 0 0 14px rgba(80,220,255,0.08);}50%{box-shadow:0 0 26px rgba(58,240,255,0.42),0 0 52px rgba(58,240,255,0.14),inset 0 0 24px rgba(80,220,255,0.16);}}
-@keyframes nodeBreathPurple{0%,100%{box-shadow:0 0 14px rgba(192,58,255,0.26),0 0 28px rgba(192,58,255,0.07),inset 0 0 14px rgba(210,80,255,0.10);}50%{box-shadow:0 0 28px rgba(192,58,255,0.50),0 0 56px rgba(192,58,255,0.18),inset 0 0 26px rgba(210,80,255,0.20);}}
-@keyframes nodeBreathGreen {0%,100%{box-shadow:0 0 14px rgba(58,255,140,0.22),0 0 28px rgba(58,255,140,0.06),inset 0 0 14px rgba(80,255,160,0.08);}50%{box-shadow:0 0 26px rgba(58,255,140,0.42),0 0 52px rgba(58,255,140,0.13),inset 0 0 24px rgba(80,255,160,0.15);}}
+@keyframes nodeBreathRed   {0%,100%{box-shadow:0 0 8px rgba(255,58,92,0.20),0 0 16px rgba(255,58,92,0.05),inset 0 0 10px rgba(255,80,110,0.07);}50%{box-shadow:0 0 16px rgba(255,58,92,0.32),0 0 32px rgba(255,58,92,0.10),inset 0 0 16px rgba(255,80,110,0.12);}}
+@keyframes nodeBreathBlue  {0%,100%{box-shadow:0 0 8px rgba(58,240,255,0.18),0 0 16px rgba(58,240,255,0.04),inset 0 0 10px rgba(80,220,255,0.06);}50%{box-shadow:0 0 16px rgba(58,240,255,0.30),0 0 32px rgba(58,240,255,0.09),inset 0 0 16px rgba(80,220,255,0.11);}}
+@keyframes nodeBreathPurple{0%,100%{box-shadow:0 0 8px rgba(192,58,255,0.20),0 0 16px rgba(192,58,255,0.05),inset 0 0 10px rgba(210,80,255,0.07);}50%{box-shadow:0 0 18px rgba(192,58,255,0.36),0 0 36px rgba(192,58,255,0.11),inset 0 0 18px rgba(210,80,255,0.13);}}
+@keyframes nodeBreathGreen {0%,100%{box-shadow:0 0 8px rgba(58,255,140,0.18),0 0 16px rgba(58,255,140,0.04),inset 0 0 10px rgba(80,255,160,0.06);}50%{box-shadow:0 0 16px rgba(58,255,140,0.30),0 0 32px rgba(58,255,140,0.08),inset 0 0 16px rgba(80,255,160,0.10);}}
 
 .n-static{background:rgba(80,90,110,0.28);box-shadow:none;animation:staticFlicker 1.8s infinite;}
 .n-chaos{background:rgba(255,159,10,0.14);box-shadow:0 0 14px rgba(255,159,10,0.28);animation:chaosRotate 3s linear infinite;}
@@ -192,6 +192,8 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
 <div id="title">
   <div class="t-logo">SYNAPSE</div>
   <div class="t-sub">NEURAL CHAIN SYSTEM</div>
+  <div style="font-size:clamp(12px,3vw,16px);color:rgba(200,215,255,0.55);margin-bottom:6px;letter-spacing:0.05em;">光に触れると、世界が静かに応える。</div>
+  <div style="font-size:clamp(9px,2vw,11px);color:rgba(150,170,220,0.32);margin-bottom:32px;letter-spacing:0.2em;">Touch the signal. Feel the resonance.</div>
   <div class="t-modes">
     <div class="mode-btn sel" data-mode="standard" onclick="selectMode('standard',this)">
       <div class="mode-name">STANDARD</div>
@@ -214,11 +216,10 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
       <div class="mode-tag">∞ NO LIMIT</div>
     </div>
   </div>
-  <button id="start-btn" onclick="initGame()">INITIALIZE</button>
+  <button id="start-btn" onclick="initGame()">TOUCH  —  RESONATE  —  FLOW</button>
   <div class="t-hi" id="hi-display">BEST — ···</div>
-  <div style="font-size:10px;color:rgba(180,210,255,0.3);margin-top:10px;letter-spacing:0.15em;">
-    ↑↓←→ MOVE &nbsp;·&nbsp; SPACE SELECT/SWAP &nbsp;·&nbsp; MOUSE DRAG
-  </div>
+  <div style="font-size:10px;color:rgba(180,210,255,0.22);margin-top:12px;letter-spacing:0.12em;">急がなくていい。ただ、流れに触れていればいい。</div>
+  <div style="font-size:9px;color:rgba(140,160,200,0.18);margin-top:4px;letter-spacing:0.15em;">↑↓←→ MOVE &nbsp;·&nbsp; SPACE SELECT &nbsp;·&nbsp; DRAG</div>
 </div>
 
 <!-- HUD -->
@@ -259,13 +260,14 @@ body.synchro-mode #grid-wrap{animation:synchroFlash 1.2s ease-in-out infinite;}
 
 <!-- GAMEOVER -->
 <div id="gameover">
-  <div class="go-title" id="go-title">SIGNAL LOST</div>
-  <div class="go-sub" id="go-sub">CONNECTION TERMINATED</div>
+  <div class="go-title" id="go-title">FLOW ENDED</div>
+  <div class="go-sub" id="go-sub">THE SIGNAL FADES INTO SILENCE</div>
   <div class="go-stats">
     <div>SCORE <span id="go-score">0</span></div>
     <div>MAX CHAIN <span id="go-chain">0</span>x</div>
     <div>BEST <span id="go-best">0</span></div>
   </div>
+  <div style="font-size:11px;color:rgba(160,180,220,0.35);margin-bottom:14px;letter-spacing:0.1em;">また触れるとき、流れは戻ってくる。</div>
   <button class="go-btn" onclick="returnTitle()">RECONNECT</button>
 </div>
 
@@ -289,60 +291,142 @@ var gamePhase = 1;
 var synchroActive = false;
 var mode = 'standard';
 
-// ===== AUDIO ENGINE =====
+// ===== AUDIO ENGINE — AMBIENT / HEALING =====
 let actx = null;
-let masterGain, reverbGain;
+let masterGain, reverbGain, delayGain;
+let ambiDrone = null; // continuous ambient drone nodes
 
 function initAudio() {
   if (actx) return;
   actx = new (window.AudioContext || window.webkitAudioContext)();
-  masterGain = actx.createGain(); masterGain.gain.value = 0.55;
-  reverbGain = actx.createGain(); reverbGain.gain.value = 0.18;
+
+  masterGain = actx.createGain(); masterGain.gain.value = 0.45;
+  reverbGain = actx.createGain(); reverbGain.gain.value = 0.55; // heavy reverb for ambience
+
+  // Long reverb impulse (3.5s — lush space)
   const conv = actx.createConvolver();
-  const len = actx.sampleRate * 1.8;
-  const imp = actx.createBuffer(2, len, actx.sampleRate);
-  for (let c=0;c<2;c++){const d=imp.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);}
+  const len  = actx.sampleRate * 3.5;
+  const imp  = actx.createBuffer(2, len, actx.sampleRate);
+  for (let c=0;c<2;c++){
+    const d=imp.getChannelData(c);
+    for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.6);
+  }
   conv.buffer = imp;
+
+  // Delay for shimmer
+  const delay = actx.createDelay(1.5);
+  delay.delayTime.value = 0.38;
+  delayGain = actx.createGain(); delayGain.gain.value = 0.18;
+
   masterGain.connect(actx.destination);
   reverbGain.connect(conv); conv.connect(actx.destination);
+  delay.connect(delayGain); delayGain.connect(actx.destination);
+
+  startAmbientDrone();
 }
 
-function playTone(freq, type='sine', dur=0.12, vol=0.25, detune=0) {
+// Continuous low ambient drone (2 detuned sine waves)
+function startAmbientDrone() {
+  if (!actx || ambiDrone) return;
+  const g = actx.createGain(); g.gain.value = 0;
+  const o1 = actx.createOscillator(); o1.type='sine'; o1.frequency.value=55;
+  const o2 = actx.createOscillator(); o2.type='sine'; o2.frequency.value=55.6;
+  const o3 = actx.createOscillator(); o3.type='sine'; o3.frequency.value=82.4;
+  o1.connect(g); o2.connect(g); o3.connect(g);
+  g.connect(reverbGain);
+  // Slow LFO for drone breathing
+  const lfo = actx.createOscillator(); lfo.frequency.value=0.08;
+  const lfoGain = actx.createGain(); lfoGain.gain.value=0.015;
+  lfo.connect(lfoGain); lfoGain.connect(g.gain);
+  o1.start(); o2.start(); o3.start(); lfo.start();
+  g.gain.linearRampToValueAtTime(0.06, actx.currentTime + 4);
+  ambiDrone = {g, o1, o2, o3, lfo};
+}
+
+function stopAmbientDrone() {
+  if (!ambiDrone) return;
+  ambiDrone.g.gain.linearRampToValueAtTime(0, actx.currentTime + 2);
+  setTimeout(()=>{
+    try{ ambiDrone.o1.stop();ambiDrone.o2.stop();ambiDrone.o3.stop();ambiDrone.lfo.stop(); }catch(e){}
+    ambiDrone = null;
+  }, 2200);
+}
+
+// Soft tone with heavy reverb — crystal bowl feel
+function playTone(freq, type='sine', dur=0.5, vol=0.15, detune=0) {
   if (!actx) return;
   const osc = actx.createOscillator();
-  const g = actx.createGain();
+  const g   = actx.createGain();
   osc.type = type; osc.frequency.value = freq; osc.detune.value = detune;
+  // Soft attack, long decay
   g.gain.setValueAtTime(0, actx.currentTime);
-  g.gain.linearRampToValueAtTime(vol, actx.currentTime + 0.012);
+  g.gain.linearRampToValueAtTime(vol, actx.currentTime + 0.06);
   g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
-  osc.connect(g); g.connect(masterGain); g.connect(reverbGain);
-  osc.start(); osc.stop(actx.currentTime + dur + 0.05);
+  osc.connect(g);
+  g.connect(masterGain);
+  g.connect(reverbGain); // all tones go into reverb
+  osc.start(); osc.stop(actx.currentTime + dur + 0.1);
 }
 
-const SCALE = [261.6,293.7,329.6,349.2,392,440,493.9,523.3,587.3,659.3,698.5,784];
+// Soft pad chord (multiple harmonics, gentle)
+function playSoftPad(rootFreq, dur=1.2, vol=0.10) {
+  if (!actx) return;
+  [1, 1.5, 2, 2.5].forEach((ratio, i) => {
+    setTimeout(()=>{
+      playTone(rootFreq * ratio, 'sine', dur, vol * (1 - i*0.2), i*3);
+    }, i * 35);
+  });
+}
+
+// PENTATONIC scale — always sounds harmonious
+const PENTA = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3, 659.3, 784.0, 880.0];
+
 function playChainNote(chain) {
-  const idx = Math.min(chain - 1, SCALE.length - 1);
-  const f = SCALE[idx];
-  playTone(f * 1, 'sine', 0.18, 0.22);
-  if (chain >= 3) playTone(f * 1.5, 'triangle', 0.14, 0.10);
-  if (chain >= 6) playTone(f * 2, 'sine', 0.10, 0.07);
-  if (chain >= 10) { playTone(f * 0.5, 'sawtooth', 0.22, 0.08); }
+  const idx = Math.min(chain - 1, PENTA.length - 1);
+  const f   = PENTA[idx];
+  playSoftPad(f, 1.4 + chain*0.05, 0.12);
+  // Shimmer overtone at higher chains
+  if (chain >= 6)  playTone(f * 3, 'sine', 0.8, 0.04);
+  if (chain >= 10) playTone(f * 4, 'sine', 1.0, 0.03);
 }
 
 function playDestroy(color, count) {
-  const freqs = {red:220,blue:440,purple:330,green:370,static:150,chaos:550,boost:660};
-  const f = freqs[color] || 330;
-  playTone(f, 'triangle', 0.1+count*0.02, 0.15+Math.min(count*0.02,0.15));
-  if (count >= 4) playTone(f*1.25,'sine',0.12,0.08);
+  // Each color has its own harmonic character
+  const roots = {red:196,blue:523,purple:370,green:440,static:130,chaos:311,boost:659};
+  const f = roots[color] || 370;
+  playSoftPad(f, 0.8 + count*0.08, 0.09 + Math.min(count*0.012, 0.06));
 }
 
+// Swap: very soft water-drop touch
+function playSwap() {
+  if (!actx) return;
+  playTone(880, 'sine', 0.25, 0.06);
+  setTimeout(()=> playTone(1108, 'sine', 0.20, 0.04), 55);
+}
+
+// Select: gentle crystal ping
+function playSelect() {
+  if (!actx) return;
+  playTone(1320, 'sine', 0.35, 0.07);
+  setTimeout(()=> playTone(1760, 'sine', 0.25, 0.03), 40);
+}
+
+// SYNCHRO: deep bell cascade
 function playSynchro() {
-  [220,330,440,550,660].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',0.4,0.18,i*5),i*60));
+  if (!actx) return;
+  [220, 330, 440, 660, 880].forEach((f,i)=>{
+    setTimeout(()=>{
+      playTone(f, 'sine', 2.5, 0.12 - i*0.02);
+      if(ambiDrone) ambiDrone.g.gain.linearRampToValueAtTime(0.12, actx.currentTime+1);
+    }, i*120);
+  });
 }
 
+// BREAK: soft descending tone (not jarring)
 function playBreak() {
-  playTone(180,'sawtooth',0.4,0.22,-50);
-  playTone(90,'sine',0.5,0.18);
+  if (!actx) return;
+  playTone(220, 'sine', 1.2, 0.10, -30);
+  setTimeout(()=> playTone(165, 'sine', 1.0, 0.07, -20), 300);
 }
 
 // ===== BACKGROUND DRAW =====
@@ -372,7 +456,7 @@ function drawBg() {
     const dw = vw * scale, dh = vh * scale;
     const dx = (W - dw) / 2,  dy = (H - dh) / 2;
 
-    bgX.globalAlpha = 0.55; // ← 透明度（0=完全透明 / 1=不透明）
+    bgX.globalAlpha = 0.32; // ← 透明度（0=完全透明 / 1=不透明）
     bgX.drawImage(bgVideo, dx, dy, dw, dh);
     bgX.globalAlpha = 1;
   } else {
@@ -382,7 +466,7 @@ function drawBg() {
   }
 
   // ── Dark overlay to keep game readable ──
-  bgX.fillStyle = 'rgba(3,2,10,0.38)';
+  bgX.fillStyle = 'rgba(3,2,10,0.62)';
   bgX.fillRect(0, 0, W, H);
 
   // ── Nebula orbs (always present, very subtle) ──
@@ -395,7 +479,7 @@ function drawBg() {
   ];
   for (const o of orbs) {
     const pulse = Math.sin(bgT * 0.45 + o.ph) * 0.5 + 0.5;
-    const alpha = 0.055 + pulse * 0.035;
+    const alpha = 0.030 + pulse * 0.018;
     const grad = bgX.createRadialGradient(
       o.nx*W, o.ny*H, 0,
       o.nx*W, o.ny*H, Math.max(W,H) * (o.rx + pulse*0.03)
@@ -467,18 +551,20 @@ const particles = [];
 function spawnParticles(x, y, color, count) {
   const cols = {red:'255,58,92',blue:'58,240,255',purple:'192,58,255',green:'58,255,140',boost:'255,249,160',chaos:'255,159,10',static:'160,170,210'};
   const c = cols[color] || '200,220,255';
-  for (let i = 0; i < count; i++) {
+  // Healing: fewer particles, slow float, gentle fade
+  const softCount = Math.ceil(count * 0.55);
+  for (let i = 0; i < softCount; i++) {
     const ang = Math.random() * Math.PI * 2;
-    const spd = 0.6 + Math.random() * 4.2;
-    const big = Math.random() < 0.2; // 20% chance of larger glow particle
+    const spd = 0.3 + Math.random() * 1.8; // slower
+    const big = Math.random() < 0.25;
     particles.push({
       x, y,
-      vx: Math.cos(ang) * spd,
-      vy: Math.sin(ang) * spd - (big ? 2.5 : 1.5),
-      life: big ? 0.85 : 1,
+      vx: Math.cos(ang) * spd * 0.7,
+      vy: Math.sin(ang) * spd - (big ? 1.2 : 0.8), // drift upward
+      life: 1,
       col: c,
-      size: big ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2.5,
-      decay: big ? 0.022 + Math.random()*0.018 : 0.028 + Math.random()*0.025
+      size: big ? 3.5 + Math.random()*2 : 1.2 + Math.random()*2,
+      decay: big ? 0.012 + Math.random()*0.010 : 0.016 + Math.random()*0.012 // slow fade
     });
   }
 }
@@ -684,26 +770,34 @@ function drawFx() {
   // ── Extend phase rings ──
   drawExtendRings();
 
-  // ── Particles ──
+  // ── Particles — soft float ──
   for (let i = particles.length-1; i >= 0; i--) {
     const p = particles[i];
-    const alpha = p.life * 0.88;
+    const ease = p.life * p.life; // eased fade — stays bright longer, fades fast at end
     const r = p.size * p.life;
 
-    // Glow halo
+    // Wide soft glow
     fxX.beginPath();
-    fxX.arc(p.x, p.y, r * 2.2, 0, Math.PI*2);
-    fxX.fillStyle = `rgba(${p.col},${alpha * 0.18})`;
+    fxX.arc(p.x, p.y, r * 3.5, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${p.col},${ease * 0.10})`;
     fxX.fill();
 
-    // Core dot
+    // Medium halo
     fxX.beginPath();
-    fxX.arc(p.x, p.y, r, 0, Math.PI*2);
-    fxX.fillStyle = `rgba(${p.col},${alpha})`;
+    fxX.arc(p.x, p.y, r * 1.8, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${p.col},${ease * 0.22})`;
     fxX.fill();
 
-    p.x += p.vx; p.y += p.vy; p.vy += 0.10;
-    p.life -= p.decay; p.size *= 0.975;
+    // Core
+    fxX.beginPath();
+    fxX.arc(p.x, p.y, r * 0.7, 0, Math.PI*2);
+    fxX.fillStyle = `rgba(${p.col},${ease * 0.80})`;
+    fxX.fill();
+
+    p.x += p.vx; p.y += p.vy;
+    p.vy -= 0.012; // gentle upward drift (anti-gravity float)
+    p.vx *= 0.98;
+    p.life -= p.decay; p.size *= 0.992;
     if (p.life <= 0) particles.splice(i, 1);
   }
 
@@ -895,7 +989,7 @@ function onPointerDown(e) {
       extendExtra.delete(key); // toggle off
     } else {
       extendExtra.add(key);
-      playTone(550,'sine',0.08,0.14);
+      playSelect();
       spawnSelectRipple(r, c);   // ← 波紋
       // pop effect
       const el = cell.firstChild;
@@ -993,7 +1087,7 @@ function moveCursor(dr, dc) {
   kbCursor = {r: nr, c: nc};
   drawKbCursor();
   spawnSelectRipple(nr, nc);
-  playTone(280, 'sine', 0.06, 0.08);
+  playSelect();
 }
 
 function kbConfirm() {
@@ -1030,7 +1124,7 @@ function kbConfirm() {
     cellEls[r]?.[c]?.classList.add('sel');
     highlightConnected(r, c);
     spawnSelectRipple(r, c);
-    playTone(360, 'sine', 0.08, 0.13);
+    playSelect();
   } else {
     // Second confirm = cancel selection (same cell) or swap (if adjacent)
     if (kbMoveFrom.r === r && kbMoveFrom.c === c) {
@@ -1129,7 +1223,7 @@ function trySwap(r1,c1,r2,c2) {
 function doSwap(r1,c1,r2,c2) {
   const tmp=grid[r1][c1]; grid[r1][c1]=grid[r2][c2]; grid[r2][c2]=tmp;
   refreshCell(r1,c1,false); refreshCell(r2,c2,false);
-  playTone(300,'sine',0.08,0.12);
+  playSwap();
 }
 
 // ===== FLOOD-FILL CONNECTED MATCH =====
@@ -1327,20 +1421,23 @@ function destroyMatches(groups, allCells) {
 }
 
 function fallAndFill() {
-  const pureMode = mode==='pure';
-  for(let c=0;c<COLS;c++){
-    let writeRow=ROWS-1;
-    for(let r=ROWS-1;r>=0;r--){
-      if(grid[r][c]!==null){
-        if(writeRow!==r){ grid[writeRow][c]=grid[r][c]; grid[r][c]=null; }
-        writeRow--;
+  const pureMode = mode === 'pure';
+  // 消去されたセルをすべて新しいランダムノードで埋める（落下なし・全盤面再生成）
+  let anyNull = false;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === null) {
+        grid[r][c] = makeNode(randomType(gamePhase, pureMode));
+        anyNull = true;
       }
     }
-    for(let r=writeRow;r>=0;r--){
-      grid[r][c]=makeNode(randomType(gamePhase, pureMode));
+  }
+  // 全セルを再描画（新しく生成されたセルにはfall-inアニメーション）
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      refreshCell(r, c, anyNull);
     }
   }
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) refreshCell(r,c, grid[r][c]?.type!==null);
 }
 
 // ===== GIMMICKS =====
@@ -1553,6 +1650,9 @@ function initGame() {
   cancelAnimationFrame(animId);
   animId=requestAnimationFrame(gameLoop);
 
+  // ambient drone restart
+  if (actx) startAmbientDrone();
+
   // keyboard cursor
   kbCursor = {r:2, c:2}; kbMoveFrom = null;
   setTimeout(()=>drawKbCursor(), 100);
@@ -1565,6 +1665,7 @@ function endGame() {
   gameRunning=false;
   cancelAnimationFrame(animId);
   if (kbCursorEl) { kbCursorEl.remove(); kbCursorEl=null; }
+  stopAmbientDrone();
   playBreak();
 
   const goTitles=['SIGNAL LOST','DISCONNECTED','FLOW ENDED'];
